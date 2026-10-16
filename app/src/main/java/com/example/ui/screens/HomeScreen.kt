@@ -16,16 +16,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.models.Announcement
 import com.example.data.models.MemberProfile
 import com.example.data.models.RoleAssignment
 import com.example.ui.components.GlassCard
 import com.example.ui.components.StatusBadge
 import com.example.ui.components.VerifiedBadge
-import com.example.ui.theme.BumblebeeYellowTertiary
 import com.example.ui.theme.EagleBlueDark
 import com.example.ui.theme.EagleBluePrimary
 import com.example.ui.theme.ForestGreenSecondary
@@ -78,27 +79,47 @@ fun HomeScreen(
                         .background(EagleBlueDark)
                         .padding(14.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Shield,
-                                contentDescription = null,
-                                tint = BumblebeeYellowTertiary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
                             Text(
                                 text = member.primaryClubName,
                                 color = Color.White,
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                            Text(
+                                text = member.regionName,
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = "TFOE-PE, Inc. • Humanitarian Service",
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 10.sp
+                            )
                         }
-                        Text(
-                            text = member.regionName,
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 12.sp
-                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_beec_logo),
+                                contentDescription = "BEEC Emblem",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(38.dp)
+                            )
+                        }
                     }
                 }
 

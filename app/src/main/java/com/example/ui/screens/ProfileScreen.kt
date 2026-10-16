@@ -7,8 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.*
@@ -94,7 +94,7 @@ fun ProfileScreen(
                         VerifiedBadge()
                     }
 
-                    Divider(color = Color.White.copy(alpha = 0.2f))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.2f))
 
                     Text(
                         text = member.fullName.uppercase(),
@@ -238,7 +238,7 @@ fun ProfileScreen(
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
-            Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
+            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Sign Out & Clear Sensitive Cache",

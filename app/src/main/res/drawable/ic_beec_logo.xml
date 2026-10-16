@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Outer Gold Wreath Border -->
+    <path
+        android:fillColor="#F5A623"
+        android:pathData="M60,4 C29.07,4 4,29.07 4,60 C4,90.93 29.07,116 60,116 C90.93,116 116,90.93 116,60 C116,29.07 90.93,4 60,4 Z M60,10 C87.61,10 110,32.39 110,60 C110,87.61 87.61,110 60,110 C32.39,110 10,87.61 10,60 C10,32.39 32.39,10 60,10 Z" />
+
+    <!-- Dark Center Shield -->
+    <path
+        android:fillColor="#0A2E50"
+        android:pathData="M60,12 C33.49,12 12,33.49 12,60 C12,86.51 33.49,108 60,108 C86.51,108 108,86.51 108,60 C108,33.49 86.51,12 60,12 Z" />
+
+    <!-- Monument Spire (Bantayog) -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M54,75 L60,35 L66,75 L54,75 Z M52,75 L68,75 L70,82 L50,82 Z" />
+
+    <!-- Golden Wings Spanning Above Monument -->
+    <path
+        android:fillColor="#F5A623"
+        android:pathData="M60,20 C48,26 30,22 18,14 C28,28 44,32 58,30 C62,30 76,28 102,14 C90,22 72,26 60,20 Z" />
+
+    <!-- Golden Ribbon -->
+    <path
+        android:fillColor="#F5A623"
+        android:pathData="M16,56 C36,62 84,62 104,56 L100,68 C80,74 40,74 20,68 Z" />
+
+    <!-- Ribbon Inscription Backdrop -->
+    <path
+        android:fillColor="#0A2E50"
+        android:pathData="M24,60 C42,65 78,65 96,60 L94,64 C78,68 42,68 26,64 Z" />
+</vector>

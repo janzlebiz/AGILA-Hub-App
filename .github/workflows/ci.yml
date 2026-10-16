@@ -20,11 +20,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Validate Gradle Wrapper & Dependencies
-        uses: gradle/actions/setup-gradle@v3
-
       - name: Build Android Applet Baseline
-        run: gradle :app:assembleDebug
+        run: |
+          GRADLE_ROOT=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
+          echo "Located Gradle Root Directory at: $GRADLE_ROOT"
+          cd "$GRADLE_ROOT"
+          gradle :app:assembleDebug
 
       - name: Run Unit Tests
-        run: gradle :app:testDebugUnitTest
+        run: |
+          GRADLE_ROOT=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
+          echo "Located Gradle Root Directory at: $GRADLE_ROOT"
+          cd "$GRADLE_ROOT"
+          gradle :app:testDebugUnitTest
