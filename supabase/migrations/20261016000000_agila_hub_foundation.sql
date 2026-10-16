@@ -3,8 +3,10 @@
 -- Description: Core schema, organizations, memberships, roles, invitations, announcements, events, attendance, contributions, documents, RAG chunks, audit logs, and RLS policies.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- Enums
+-- ... (existing enums)
 CREATE TYPE org_type AS ENUM ('NATIONAL', 'REGION', 'CLUB');
 CREATE TYPE member_status AS ENUM ('PENDING', 'ACTIVE', 'SUSPENDED', 'REVOKED');
 CREATE TYPE role_code AS ENUM ('MEMBER', 'CLUB_OFFICER', 'FINANCE_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER');
@@ -138,6 +140,7 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     chunk_index INT NOT NULL,
     content TEXT NOT NULL,
+    embedding VECTOR(768),
     article_ref TEXT,
     section_ref TEXT,
     page_number INT,
@@ -179,7 +182,7 @@ BEGIN
         WHERE user_id = user_uuid AND status = 'ACTIVE'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Sample RLS Policy: Active members can view published announcements in their organization scope
 CREATE POLICY "Active members view announcements"
