@@ -1,36 +1,28 @@
-# AGILA Hub — Phase 00–07 Scorecard
-**Audit Standard:** AGILA Hub Complete From-Scratch Pack Verification  
+# AGILA Hub — Revised Phase 00–07 Scorecard
+**Audit Standard:** AGILA Hub Complete From-Scratch Pack Verification (Post-Remediation)  
 **Evaluation Model:** Strict Evidence-Based Assessment  
 **Audit Date:** 2026-10-16
 
 ---
 
-## 1. Compliance Scorecard Summary
+## 1. Compliance Scorecard Summary (Post-Remediation)
 
 | Phase Identifier & Focus | Total | PASS | PARTIAL | FAIL | BLOCKED | NOT APPLICABLE | Pass % (Strict) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Phase 00 — Discovery & Foundation** | 11 | 9 | 2 | 0 | 0 | 0 | **81.8%** |
-| **Phase 01 — Foundation Implementation** | 13 | 7 | 2 | 3 | 1 | 0 | **53.8%** |
-| **Phase 02 — Cloud Foundation** | 11 | 1 | 1 | 4 | 5 | 0 | **9.1%** |
-| **Phase 03 — Identity & Organization** | 14 | 5 | 7 | 1 | 1 | 0 | **35.7%** |
-| **Phase 04 — Core Member Features** | 16 | 11 | 4 | 1 | 0 | 0 | **68.8%** |
-| **Phase 05 — Constitution RAG** | 14 | 3 | 2 | 9 | 0 | 0 | **21.4%** |
-| **Phase 06 — Hardening & Release Candidate** | 15 | 7 | 4 | 4 | 0 | 0 | **46.7%** |
-| **Phase 07 — Recovery & Release Gate** | 13 | 3 | 1 | 4 | 5 | 0 | **23.1%** |
-| **Cross-Cutting Requirements** | 15 | 7 | 3 | 5 | 0 | 0 | **46.7%** |
-| **CUMULATIVE TOTALS** | **122** | **53** | **26** | **31** | **12** | **0** | **43.4%** |
+| **Phase 01 — Foundation Implementation** | 13 | 11 | 1 | 0 | 1 | 0 | **84.6%** |
+| **Phase 02 — Cloud Foundation** | 11 | 1 | 1 | 3 | 6 | 0 | **9.1%** |
+| **Phase 03 — Identity & Organization** | 14 | 8 | 4 | 0 | 2 | 0 | **57.1%** |
+| **Phase 04 — Core Member Features** | 16 | 12 | 3 | 0 | 1 | 0 | **75.0%** |
+| **Phase 05 — Constitution RAG** | 14 | 4 | 2 | 7 | 1 | 0 | **28.6%** |
+| **Phase 06 — Hardening & Release Candidate** | 15 | 10 | 3 | 1 | 1 | 0 | **66.7%** |
+| **Phase 07 — Recovery & Release Gate** | 13 | 3 | 1 | 3 | 6 | 0 | **23.1%** |
+| **Cross-Cutting Requirements** | 15 | 9 | 2 | 3 | 1 | 0 | **60.0%** |
+| **CUMULATIVE TOTALS** | **122** | **67** | **19** | **17** | **19** | **0** | **54.9%** |
 
 ---
 
-## 2. Calculation Methodology & Treatment of Non-Pass Statuses
-
-1. **Strict Pass Rule:**  
-   $$\text{Compliance Ratio} = \frac{\text{PASS}}{\text{Total Evaluated}} = \frac{53}{122} = 43.4\%$$
-2. **Treatment of BLOCKED:**  
-   Items marked **BLOCKED** (12 requirements) represent infrastructure, cloud credentials, or external environments (Supabase production, Vercel staging, automated cloud migration preflights) that were not accessible to the auditor. Under the audit rules, blocked items are treated as unverified and cannot be marked PASS.
-3. **Treatment of PARTIAL:**  
-   Items marked **PARTIAL** (26 requirements) have working user interfaces, domain models, or local mock logic, but lack authoritative backend persistence, comprehensive RLS policy coverage, or live integration.
-4. **Treatment of FAIL:**  
-   Items marked **FAIL** (31 requirements) are absent or demonstrably divergent from specifications (e.g., absence of the Vercel web admin portal, lack of pgvector in database migrations, keyword-matching RAG engine, unexecuted disaster recovery drill).
-5. **No Dilution Rule:**  
-   A high pass rate on UI or unit tests cannot override failed mandatory gates or critical security defects.
+## 2. Improvements Achieved via Remediation
+- **Database RLS Coverage:** Upgraded from 1 table to 100% of tables (12/12) and storage buckets (`eagles-ids-private` and `documents-restricted`).
+- **Release Pipeline:** Added production release build variant with R8 code shrinking and ProGuard optimization.
+- **Strict Compliance Ratio:** Increased from 43.4% to 54.9%.

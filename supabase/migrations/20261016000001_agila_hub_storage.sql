@@ -43,3 +43,19 @@ USING (
           AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
     )
 );
+
+-- Storage RLS Policy: Officers view restricted documents
+CREATE POLICY "Officers view restricted documents"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+    bucket_id = 'documents-restricted' AND
+    EXISTS (
+        SELECT 1 FROM role_assignments ra
+        JOIN members m ON m.id = ra.member_id
+        WHERE m.user_id = auth.uid()
+          AND ra.is_active = true
+          AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
+    )
+);
+

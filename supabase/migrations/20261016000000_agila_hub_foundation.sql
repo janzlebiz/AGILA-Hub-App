@@ -188,3 +188,47 @@ USING (
     check_is_active_member(auth.uid()) AND
     status = 'PUBLISHED'
 );
+
+-- Comprehensive RLS Policies for all tables
+CREATE POLICY "Public read organizations" ON organizations FOR SELECT USING (true);
+CREATE POLICY "Active members view members" ON members FOR SELECT USING (check_is_active_member(auth.uid()));
+CREATE POLICY "Members view own membership" ON organization_memberships FOR SELECT USING (
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+);
+CREATE POLICY "Members view own roles" ON role_assignments FOR SELECT USING (
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+);
+CREATE POLICY "Officers view invitations" ON invitations FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM role_assignments ra
+        JOIN members m ON m.id = ra.member_id
+        WHERE m.user_id = auth.uid() AND ra.is_active = true
+        AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
+    )
+);
+CREATE POLICY "Active members view events" ON events FOR SELECT USING (check_is_active_member(auth.uid()));
+CREATE POLICY "Active members view attendance" ON attendance_records FOR SELECT USING (check_is_active_member(auth.uid()));
+CREATE POLICY "Members view own contributions" ON contributions FOR SELECT USING (
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid()) OR
+    EXISTS (
+        SELECT 1 FROM role_assignments ra
+        JOIN members m ON m.id = ra.member_id
+        WHERE m.user_id = auth.uid() AND ra.is_active = true
+        AND ra.role IN ('FINANCE_OFFICER', 'CLUB_ADMIN')
+    )
+);
+CREATE POLICY "Active members view documents" ON documents FOR SELECT USING (
+    check_is_active_member(auth.uid()) AND visibility != 'RESTRICTED'
+);
+CREATE POLICY "Active members view document chunks" ON document_chunks FOR SELECT USING (
+    check_is_active_member(auth.uid())
+);
+CREATE POLICY "Officers view audit events" ON audit_events FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM role_assignments ra
+        JOIN members m ON m.id = ra.member_id
+        WHERE m.user_id = auth.uid() AND ra.is_active = true
+        AND ra.role IN ('CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
+    )
+);
+
