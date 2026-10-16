@@ -44,4 +44,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
