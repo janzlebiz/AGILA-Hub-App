@@ -22,14 +22,24 @@ jobs:
 
       - name: Build Android Applet Baseline
         run: |
-          GRADLE_ROOT=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
-          echo "Located Gradle Root Directory at: $GRADLE_ROOT"
-          cd "$GRADLE_ROOT"
-          gradle :app:assembleDebug
+          if [ -f "settings.gradle.kts" ] || [ -f "settings.gradle" ]; then
+              gradle :app:assembleDebug
+          else
+              GRADLE_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
+              if [ -n "$GRADLE_FILE" ]; then
+                  cd "$(dirname "$GRADLE_FILE")"
+              fi
+              gradle :app:assembleDebug
+          fi
 
       - name: Run Unit Tests
         run: |
-          GRADLE_ROOT=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1 | xargs dirname)
-          echo "Located Gradle Root Directory at: $GRADLE_ROOT"
-          cd "$GRADLE_ROOT"
-          gradle :app:testDebugUnitTest
+          if [ -f "settings.gradle.kts" ] || [ -f "settings.gradle" ]; then
+              gradle :app:testDebugUnitTest
+          else
+              GRADLE_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
+              if [ -n "$GRADLE_FILE" ]; then
+                  cd "$(dirname "$GRADLE_FILE")"
+              fi
+              gradle :app:testDebugUnitTest
+          fi
