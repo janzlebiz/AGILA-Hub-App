@@ -8,11 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -67,7 +66,7 @@ fun ProfileScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                        imageVector = Icons.Default.Settings,
                         contentDescription = null,
                         tint = if (isDarkMode) BumblebeeYellowTertiary else EagleBluePrimary
                     )
@@ -119,7 +118,7 @@ fun ProfileScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Shield,
+                                imageVector = Icons.Default.Lock,
                                 contentDescription = null,
                                 tint = BumblebeeYellowTertiary,
                                 modifier = Modifier.size(22.dp)
@@ -222,7 +221,7 @@ fun ProfileScreen(
         GlassCard(testTag = "upload_eagles_id_card") {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Badge,
+                    imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = EagleBluePrimary
                 )
@@ -263,7 +262,7 @@ fun ProfileScreen(
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = EagleBluePrimary)
             ) {
-                Icon(Icons.Default.UploadFile, contentDescription = null)
+                Icon(Icons.Default.Refresh, contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("Select & Upload Eagles ID Card")
             }

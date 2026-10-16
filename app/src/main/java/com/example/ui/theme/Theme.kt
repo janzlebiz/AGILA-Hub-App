@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.example.ui.theme.Typography
 
 // Original Rich Brand Light Color Scheme
 private val OriginalLightColorScheme = lightColorScheme(

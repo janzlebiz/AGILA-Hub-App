@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -98,7 +98,7 @@ fun AnnouncementsScreen(
                                     modifier = Modifier.testTag("archive_button_${ann.id}")
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Archive,
+                                        imageVector = Icons.Default.Delete,
                                         contentDescription = "Archive Bulletin",
                                         tint = MaterialTheme.colorScheme.outline
                                     )

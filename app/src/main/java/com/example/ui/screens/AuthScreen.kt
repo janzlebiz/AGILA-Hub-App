@@ -6,8 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,7 +47,7 @@ fun AuthScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Shield,
+                imageVector = Icons.Default.Person,
                 contentDescription = "AGILA Hub Emblem",
                 tint = BumblebeeYellowTertiary,
                 modifier = Modifier.size(72.dp)
@@ -90,7 +90,7 @@ fun AuthScreen(
                     value = tokenInput,
                     onValueChange = { tokenInput = it; errorMessage = null },
                     label = { Text("Invitation Token / Code") },
-                    leadingIcon = { Icon(Icons.Default.Key, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("invitation_token_input"),

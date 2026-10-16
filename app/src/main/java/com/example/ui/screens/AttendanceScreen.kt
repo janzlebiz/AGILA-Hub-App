@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HowToReg
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,7 +64,7 @@ fun AttendanceScreen(
                 GlassCard(testTag = "attendance_recording_card") {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.HowToReg,
+                            imageVector = Icons.Default.List,
                             contentDescription = null,
                             tint = EagleBluePrimary
                         )
@@ -116,7 +116,7 @@ fun AttendanceScreen(
                         value = memberNameInput,
                         onValueChange = { memberNameInput = it; recordMessage = null },
                         label = { Text("Member Full Name") },
-                        leadingIcon = { Icon(Icons.Default.PersonAdd, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("attendance_member_input"),

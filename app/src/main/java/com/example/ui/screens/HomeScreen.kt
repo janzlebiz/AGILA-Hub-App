@@ -157,7 +157,7 @@ fun HomeScreen(
                 QuickActionItem(
                     title = "Check In",
                     subtitle = "Attendance",
-                    icon = Icons.Default.EventAvailable,
+                    icon = Icons.Default.DateRange,
                     backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.weight(1f),
@@ -167,7 +167,7 @@ fun HomeScreen(
                 QuickActionItem(
                     title = "Dues & Fees",
                     subtitle = "Contributions",
-                    icon = Icons.Default.AccountBalanceWallet,
+                    icon = Icons.Default.Add,
                     backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
@@ -177,7 +177,7 @@ fun HomeScreen(
                 QuickActionItem(
                     title = "Magna Carta",
                     subtitle = "RAG Q&A",
-                    icon = Icons.Default.AutoAwesome,
+                    icon = Icons.Default.Info,
                     backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                     modifier = Modifier.weight(1f),

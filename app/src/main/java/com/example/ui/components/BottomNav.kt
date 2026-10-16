@@ -2,8 +2,6 @@ package com.example.ui.components
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,11 +18,11 @@ enum class BottomTab(
     val testTag: String
 ) {
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home, "tab_home"),
-    ANNOUNCEMENTS("Bulletins", Icons.Filled.Campaign, Icons.Outlined.Campaign, "tab_announcements"),
-    ATTENDANCE("Attendance", Icons.Filled.Event, Icons.Outlined.Event, "tab_attendance"),
-    FINANCE("Finance", Icons.Filled.AccountBalanceWallet, Icons.Outlined.AccountBalanceWallet, "tab_finance"),
-    CONSTITUTION("RAG Q&A", Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook, "tab_constitution"),
-    PROFILE("Eagles ID", Icons.Filled.Badge, Icons.Outlined.Badge, "tab_profile")
+    ANNOUNCEMENTS("Bulletins", Icons.Filled.Notifications, Icons.Outlined.Notifications, "tab_announcements"),
+    ATTENDANCE("Attendance", Icons.Filled.DateRange, Icons.Outlined.DateRange, "tab_attendance"),
+    FINANCE("Finance", Icons.Filled.List, Icons.Outlined.List, "tab_finance"),
+    CONSTITUTION("RAG Q&A", Icons.Filled.Menu, Icons.Outlined.Menu, "tab_constitution"),
+    PROFILE("Eagles ID", Icons.Filled.Person, Icons.Outlined.Person, "tab_profile")
 }
 
 @Composable

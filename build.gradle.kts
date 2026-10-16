@@ -1,5 +1,6 @@
 // Root build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
+    // Apply plugins using IDs instead of libs.versions.toml aliases to fix build failures
+    id("com.android.application") version "8.7.0" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
 }

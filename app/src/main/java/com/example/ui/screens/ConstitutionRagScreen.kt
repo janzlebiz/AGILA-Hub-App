@@ -6,9 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -69,7 +69,7 @@ fun ConstitutionRagScreen(
             GlassCard(testTag = "rag_search_card") {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.AutoAwesome,
+                        imageVector = Icons.Default.Info,
                         contentDescription = null,
                         tint = EagleBluePrimary
                     )
@@ -111,7 +111,7 @@ fun ConstitutionRagScreen(
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = EagleBluePrimary)
                 ) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                    Icon(Icons.Default.Info, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Search & Retrieve Answer", fontWeight = FontWeight.Bold)
                 }
@@ -211,7 +211,7 @@ fun ConstitutionRagScreen(
                                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
-                                            imageVector = Icons.Default.Bookmark,
+                                            imageVector = Icons.Default.Star,
                                             contentDescription = null,
                                             tint = EagleBlueDark,
                                             modifier = Modifier.size(14.dp)
@@ -256,7 +256,7 @@ fun ConstitutionRagScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            imageVector = Icons.Default.List,
                             contentDescription = null,
                             tint = EagleBluePrimary
                         )

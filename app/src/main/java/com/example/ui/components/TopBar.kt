@@ -4,9 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -64,22 +63,29 @@ fun AgilaTopBar(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Text(
-                        text = "TFOE-PE • $clubCode",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_beec_logo),
+                            contentDescription = "BEEC Emblem",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "TFOE-PE • $clubCode",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         },
         actions = {
-            // Minimalist Light / Dark Switcher Button
             IconButton(
                 onClick = onToggleDarkMode,
                 modifier = Modifier.testTag("theme_toggle_button")
             ) {
                 Icon(
-                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    imageVector = Icons.Default.Settings,
                     contentDescription = "Toggle Light/Dark Theme",
                     tint = if (isDarkMode) BumblebeeYellowSoftAccent else EagleBlueLightAccent
                 )
@@ -91,7 +97,7 @@ fun AgilaTopBar(
                     modifier = Modifier.testTag("admin_portal_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.VerifiedUser,
+                        imageVector = Icons.Default.AccountCircle,
                         contentDescription = "Admin Management Portal",
                         tint = BumblebeeYellowSoftAccent
                     )
