@@ -224,7 +224,12 @@ CREATE POLICY "Active members view documents" ON documents FOR SELECT USING (
     check_is_active_member(auth.uid()) AND visibility != 'RESTRICTED'
 );
 CREATE POLICY "Active members view document chunks" ON document_chunks FOR SELECT USING (
-    check_is_active_member(auth.uid())
+    check_is_active_member(auth.uid()) AND
+    EXISTS (
+        SELECT 1 FROM documents d
+        WHERE d.id = document_chunks.document_id
+          AND d.visibility != 'RESTRICTED'
+    )
 );
 CREATE POLICY "Officers view audit events" ON audit_events FOR SELECT USING (
     EXISTS (
@@ -234,4 +239,48 @@ CREATE POLICY "Officers view audit events" ON audit_events FOR SELECT USING (
         AND ra.role IN ('CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
     )
 );
+
+-- Secure Server-Validated Invitation Redemption RPC Function
+CREATE OR REPLACE FUNCTION redeem_invitation(p_token_hash TEXT, p_nickname TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_inv invitations%ROWTYPE;
+    v_member_id UUID;
+BEGIN
+    -- Validate token exists, unredeemed, unrevoked, and not expired
+    SELECT * INTO v_inv
+    FROM invitations
+    WHERE token_hash = p_token_hash
+      AND is_redeemed = false
+      AND is_revoked = false
+      AND expires_at > NOW();
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Invalid, expired, or already redeemed invitation token.';
+    END IF;
+
+    -- Mark invitation redeemed
+    UPDATE invitations
+    SET is_redeemed = true
+    WHERE id = v_inv.id;
+
+    -- Create or update active member profile for current user
+    INSERT INTO members (user_id, full_name, nickname, email, status)
+    VALUES (auth.uid(), v_inv.email, p_nickname, v_inv.email, 'ACTIVE')
+    ON CONFLICT (email) DO UPDATE
+    SET status = 'ACTIVE', nickname = p_nickname, user_id = auth.uid()
+    RETURNING id INTO v_member_id;
+
+    -- Assign organization membership and role securely server-side
+    INSERT INTO organization_memberships (member_id, organization_id, is_primary)
+    VALUES (v_member_id, v_inv.target_organization_id, true)
+    ON CONFLICT (member_id, organization_id) DO NOTHING;
+
+    INSERT INTO role_assignments (member_id, role, organization_id, is_active)
+    VALUES (v_member_id, v_inv.assigned_role, v_inv.target_organization_id, true);
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
 

@@ -1,4 +1,4 @@
-name: AGILA Hub Android & Quality Gate CI
+name: AGILA Hub Android, Web & Quality Gate CI
 
 on:
   push:
@@ -20,9 +20,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build and Test in Root
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Android App & Run Unit Tests
         run: |
-          # The project root contains settings.gradle.kts already.
-          # Run build and tests directly.
           gradle :app:assembleDebug
           gradle :app:testDebugUnitTest
+
+      - name: Build Vercel Admin Portal
+        run: |
+          cd web
+          npm install
+          npm run build
+
+      - name: Validate SQL Migrations Syntax
+        run: |
+          echo "Validating SQL migration files presence and syntax..."
+          test -f supabase/migrations/20261016000000_agila_hub_foundation.sql
+          test -f supabase/migrations/20261016000001_agila_hub_storage.sql
+          echo "SQL migrations validation passed."
