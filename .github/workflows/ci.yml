@@ -20,11 +20,35 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Inspect Workspace Directory
+        run: |
+          echo "=== WORKSPACE PATH ==="
+          pwd
+          echo "=== WORKSPACE CONTENTS ==="
+          ls -la
 
       - name: Build Android Applet Baseline
-        run: gradle -p . :app:assembleDebug
+        run: |
+          SETTINGS_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
+          if [ -n "$SETTINGS_FILE" ]; then
+              TARGET_DIR=$(dirname "$SETTINGS_FILE")
+              echo "Navigating to Gradle project root at: $TARGET_DIR"
+              cd "$TARGET_DIR"
+              gradle :app:assembleDebug
+          else
+              echo "ERROR: Could not locate settings.gradle.kts in repository!"
+              exit 1
+          fi
 
       - name: Run Unit Tests
-        run: gradle -p . :app:testDebugUnitTest
+        run: |
+          SETTINGS_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
+          if [ -n "$SETTINGS_FILE" ]; then
+              TARGET_DIR=$(dirname "$SETTINGS_FILE")
+              echo "Navigating to Gradle project root at: $TARGET_DIR"
+              cd "$TARGET_DIR"
+              gradle :app:testDebugUnitTest
+          else
+              echo "ERROR: Could not locate settings.gradle.kts in repository!"
+              exit 1
+          fi
