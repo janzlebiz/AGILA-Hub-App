@@ -20,12 +20,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build and Test in Gradle Root
+      - name: Build and Test in Root
         run: |
-          # Navigate to the confirmed project root directory
-          cd app/applet
-          echo "Current directory: $(pwd)"
-          
-          # Run build and tests
+          # The project root contains settings.gradle.kts already.
+          # Run build and tests directly.
           gradle :app:assembleDebug
           gradle :app:testDebugUnitTest
