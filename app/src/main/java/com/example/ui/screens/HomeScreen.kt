@@ -28,8 +28,7 @@ import com.example.ui.components.GlassCard
 import com.example.ui.components.StatusBadge
 import com.example.ui.components.VerifiedBadge
 import com.example.ui.theme.EagleBlueDark
-import com.example.ui.theme.EagleBluePrimary
-import com.example.ui.theme.ForestGreenSecondary
+import com.example.ui.theme.EagleBlueLightAccent
 
 @Composable
 fun HomeScreen(
@@ -46,7 +45,7 @@ fun HomeScreen(
             .testTag("home_screen_feed"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Greeting & Fraternal Identity Card
+        // Greeting & Minimalist Liquid Glass Identity Card
         item {
             GlassCard(testTag = "fraternal_identity_card") {
                 Row(
@@ -59,7 +58,7 @@ fun HomeScreen(
                             text = "Good day, Kuya ${member.nickname}!",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = EagleBluePrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = member.fullName,
@@ -70,14 +69,14 @@ fun HomeScreen(
                     VerifiedBadge()
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(EagleBlueDark)
-                        .padding(14.dp)
+                        .padding(16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -140,11 +139,11 @@ fun HomeScreen(
             }
         }
 
-        // Quick Actions Grid
+        // Minimalist Quick Actions Grid
         item {
             Text(
                 text = "Fraternal Services & Workflows",
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -159,7 +158,8 @@ fun HomeScreen(
                     title = "Check In",
                     subtitle = "Attendance",
                     icon = Icons.Default.EventAvailable,
-                    backgroundColor = EagleBluePrimary,
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.weight(1f),
                     testTag = "action_check_in",
                     onClick = { onQuickAction("ATTENDANCE") }
@@ -168,7 +168,8 @@ fun HomeScreen(
                     title = "Dues & Fees",
                     subtitle = "Contributions",
                     icon = Icons.Default.AccountBalanceWallet,
-                    backgroundColor = ForestGreenSecondary,
+                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
                     testTag = "action_contributions",
                     onClick = { onQuickAction("FINANCE") }
@@ -177,7 +178,8 @@ fun HomeScreen(
                     title = "Magna Carta",
                     subtitle = "RAG Q&A",
                     icon = Icons.Default.AutoAwesome,
-                    backgroundColor = EagleBlueDark,
+                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                     modifier = Modifier.weight(1f),
                     testTag = "action_rag_qa",
                     onClick = { onQuickAction("CONSTITUTION") }
@@ -194,14 +196,14 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "Latest Fraternal Bulletins",
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Freshness: Live",
                     fontSize = 11.sp,
-                    color = ForestGreenSecondary,
+                    color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -217,8 +219,8 @@ fun HomeScreen(
                 ) {
                     StatusBadge(
                         text = ann.orgScopeName,
-                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                        textColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         text = ann.publishedAt,
@@ -243,13 +245,13 @@ fun HomeScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = "Posted by ${ann.authorName}",
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = EagleBluePrimary
+                    fontWeight = FontWeight.SemiBold,
+                    color = EagleBlueLightAccent
                 )
             }
         }
@@ -262,6 +264,7 @@ private fun QuickActionItem(
     subtitle: String,
     icon: ImageVector,
     backgroundColor: Color,
+    contentColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     testTag: String = "quick_action_item"
@@ -269,12 +272,12 @@ private fun QuickActionItem(
     Card(
         onClick = onClick,
         modifier = modifier.testTag(testTag),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(14.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -283,25 +286,25 @@ private fun QuickActionItem(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f)),
+                    .background(contentColor.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    tint = Color.White,
+                    tint = contentColor,
                     modifier = Modifier.size(18.dp)
                 )
             }
             Text(
                 text = title,
-                color = Color.White,
+                color = contentColor,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = subtitle,
-                color = Color.White.copy(alpha = 0.8f),
+                color = contentColor.copy(alpha = 0.8f),
                 fontSize = 10.sp
             )
         }

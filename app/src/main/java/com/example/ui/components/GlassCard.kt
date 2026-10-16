@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 fun GlassCard(
     modifier: Modifier = Modifier,
     testTag: String = "glass_card",
-    cornerRadius: Dp = 16.dp,
+    cornerRadius: Dp = 20.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -32,14 +32,14 @@ fun GlassCard(
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = 1.dp
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(18.dp),
             content = content
         )
     }

@@ -48,4 +48,13 @@ class SecurityHardeningAndNegativeTest {
         val testUrl = repository.currentMember.value.email
         assertFalse("Secrets must not be hardcoded into member models", testUrl.contains("SUPABASE_SERVICE_ROLE_KEY"))
     }
+
+    @Test
+    fun testToggleDarkMode_UpdatesThemeState() {
+        assertFalse("Default theme mode must be light mode (pristine white)", repository.isDarkMode.value)
+        repository.toggleDarkMode()
+        assertTrue("Theme mode must switch to dark mode upon toggle", repository.isDarkMode.value)
+        repository.toggleDarkMode()
+        assertFalse("Theme mode must switch back to light mode upon second toggle", repository.isDarkMode.value)
+    }
 }

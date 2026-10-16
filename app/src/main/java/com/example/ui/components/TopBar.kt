@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,22 +19,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.ui.theme.BumblebeeYellowTertiary
-import com.example.ui.theme.EagleBluePrimary
+import com.example.ui.theme.BumblebeeYellowSoftAccent
+import com.example.ui.theme.EagleBlueLightAccent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgilaTopBar(
     title: String,
     clubCode: String = "BEEC",
+    isDarkMode: Boolean = false,
+    onToggleDarkMode: () -> Unit = {},
     onAdminClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
         modifier = modifier.testTag("agila_top_bar"),
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = EagleBluePrimary,
-            titleContentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground
         ),
         title = {
             Row(
@@ -41,34 +45,46 @@ fun AgilaTopBar(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color.White),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_agila_hub_logo),
                         contentDescription = "AGILA Hub Emblem",
                         tint = Color.Unspecified,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(28.dp)
                     )
                 }
                 Column {
                     Text(
                         text = title,
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "TFOE-PE • $clubCode",
                         fontSize = 11.sp,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         },
         actions = {
+            // Minimalist Light / Dark Switcher Button
+            IconButton(
+                onClick = onToggleDarkMode,
+                modifier = Modifier.testTag("theme_toggle_button")
+            ) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Toggle Light/Dark Theme",
+                    tint = if (isDarkMode) BumblebeeYellowSoftAccent else EagleBlueLightAccent
+                )
+            }
+
             if (onAdminClick != null) {
                 IconButton(
                     onClick = onAdminClick,
@@ -77,7 +93,7 @@ fun AgilaTopBar(
                     Icon(
                         imageVector = Icons.Default.VerifiedUser,
                         contentDescription = "Admin Management Portal",
-                        tint = BumblebeeYellowTertiary
+                        tint = BumblebeeYellowSoftAccent
                     )
                 }
             }

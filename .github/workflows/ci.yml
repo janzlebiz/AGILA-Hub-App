@@ -20,35 +20,40 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Inspect Workspace Directory
+      - name: Ensure Settings Gradle File
         run: |
-          echo "=== WORKSPACE PATH ==="
-          pwd
-          echo "=== WORKSPACE CONTENTS ==="
-          ls -la
+          if [ ! -f "settings.gradle.kts" ] && [ ! -f "settings.gradle" ]; then
+              echo "Creating settings.gradle.kts fallback for CI..."
+              cat << 'EOF' > settings.gradle.kts
+          pluginManagement {
+            repositories {
+              google {
+                content {
+                  includeGroupByRegex("com\\.android.*")
+                  includeGroupByRegex("com\\.google.*")
+                  includeGroupByRegex("androidx.*")
+                }
+              }
+              mavenCentral()
+              gradlePluginPortal()
+            }
+          }
+
+          dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+              google()
+              mavenCentral()
+            }
+          }
+
+          rootProject.name = "AGILA Hub"
+          include(":app")
+          EOF
+          fi
 
       - name: Build Android Applet Baseline
-        run: |
-          SETTINGS_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
-          if [ -n "$SETTINGS_FILE" ]; then
-              TARGET_DIR=$(dirname "$SETTINGS_FILE")
-              echo "Navigating to Gradle project root at: $TARGET_DIR"
-              cd "$TARGET_DIR"
-              gradle :app:assembleDebug
-          else
-              echo "ERROR: Could not locate settings.gradle.kts in repository!"
-              exit 1
-          fi
+        run: gradle -p . :app:assembleDebug
 
       - name: Run Unit Tests
-        run: |
-          SETTINGS_FILE=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" 2>/dev/null | head -n 1)
-          if [ -n "$SETTINGS_FILE" ]; then
-              TARGET_DIR=$(dirname "$SETTINGS_FILE")
-              echo "Navigating to Gradle project root at: $TARGET_DIR"
-              cd "$TARGET_DIR"
-              gradle :app:testDebugUnitTest
-          else
-              echo "ERROR: Could not locate settings.gradle.kts in repository!"
-              exit 1
-          fi
+        run: gradle -p . :app:testDebugUnitTest

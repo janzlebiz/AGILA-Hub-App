@@ -11,9 +11,12 @@ import java.util.UUID
 
 class AgilaRepository {
 
-    // Current Session State
+    // Current Session & Theme State
     private val _isAuthenticated = MutableStateFlow(true)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
+
+    private val _isDarkMode = MutableStateFlow(false)
+    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
 
     private val _currentMember = MutableStateFlow(
         MemberProfile(
@@ -118,6 +121,17 @@ class AgilaRepository {
         )
     )
     val auditLogs: StateFlow<List<AuditEvent>> = _auditLogs.asStateFlow()
+
+    // Theme Switcher Action
+    fun toggleDarkMode() {
+        _isDarkMode.value = !_isDarkMode.value
+        logAudit("TOGGLE_DARK_MODE", "ThemePreference", if (_isDarkMode.value) "DARK" else "LIGHT")
+    }
+
+    fun setDarkMode(enabled: Boolean) {
+        _isDarkMode.value = enabled
+        logAudit("SET_DARK_MODE", "ThemePreference", if (enabled) "DARK" else "LIGHT")
+    }
 
     // Actions
 

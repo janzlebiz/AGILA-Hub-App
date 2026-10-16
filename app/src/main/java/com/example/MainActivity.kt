@@ -29,7 +29,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            AgilaHubTheme {
+            val isDarkMode by repository.isDarkMode.collectAsStateWithLifecycle()
+
+            AgilaHubTheme(darkTheme = isDarkMode) {
                 val isAuthenticated by repository.isAuthenticated.collectAsStateWithLifecycle()
                 val memberProfile by repository.currentMember.collectAsStateWithLifecycle()
                 val activeRoles by repository.activeRoles.collectAsStateWithLifecycle()
@@ -71,6 +73,8 @@ class MainActivity : ComponentActivity() {
                             AgilaTopBar(
                                 title = if (showAdminDashboard) "Admin Governance" else "AGILA Hub",
                                 clubCode = memberProfile.primaryClubCode,
+                                isDarkMode = isDarkMode,
+                                onToggleDarkMode = { repository.toggleDarkMode() },
                                 onAdminClick = if (isOfficer) { { showAdminDashboard = !showAdminDashboard } } else null
                             )
                         },
@@ -140,6 +144,8 @@ class MainActivity : ComponentActivity() {
                                     BottomTab.PROFILE -> ProfileScreen(
                                         member = memberProfile,
                                         roles = activeRoles,
+                                        isDarkMode = isDarkMode,
+                                        onToggleDarkMode = { repository.toggleDarkMode() },
                                         onUpdateEaglesId = { front, back ->
                                             repository.updateEaglesId(front, back)
                                         },

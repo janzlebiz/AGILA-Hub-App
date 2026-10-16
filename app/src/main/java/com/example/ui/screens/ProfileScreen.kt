@@ -9,6 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.*
@@ -33,6 +35,8 @@ import com.example.ui.theme.EagleBluePrimary
 fun ProfileScreen(
     member: MemberProfile,
     roles: List<RoleAssignment>,
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
     onUpdateEaglesId: (front: String?, back: String?) -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -51,8 +55,45 @@ fun ProfileScreen(
             text = "Member Profile & Eagles ID",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = EagleBluePrimary
+            color = MaterialTheme.colorScheme.onBackground
         )
+
+        // Light / Dark Theme Switcher Card
+        GlassCard(testTag = "theme_switch_card") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                        contentDescription = null,
+                        tint = if (isDarkMode) BumblebeeYellowTertiary else EagleBluePrimary
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = if (isDarkMode) "Dark Theme Active" else "Pristine White Theme Active",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (isDarkMode) "High-contrast dark mode surface" else "Clean white major color surface",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Switch(
+                    checked = isDarkMode,
+                    onCheckedChange = { onToggleDarkMode() },
+                    modifier = Modifier.testTag("theme_switch_toggle")
+                )
+            }
+        }
 
         // Digital Eagles ID Card Display
         GlassCard(testTag = "eagles_id_card_preview") {
@@ -149,7 +190,7 @@ fun ProfileScreen(
                 text = "Assigned Fraternal Roles & Organization Scope",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = EagleBluePrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -190,7 +231,7 @@ fun ProfileScreen(
                     text = "Upload / Refresh Official Eagles ID Card",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = EagleBluePrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
