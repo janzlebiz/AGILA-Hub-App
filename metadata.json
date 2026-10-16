@@ -1,0 +1,6 @@
+{
+  "name": "AGILA Hub",
+  "description": "AGILA Hub Android member application and organizational management platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
