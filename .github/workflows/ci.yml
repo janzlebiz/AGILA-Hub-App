@@ -20,16 +20,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Debug Gradle Project Structure
+      - name: Build and Test in Gradle Root
         run: |
-          echo "Listing tasks to verify Android plugin application:"
-          gradle tasks --all
-
-      - name: Build Android Applet Baseline
-        run: |
-          # Try the most standard approach
-          gradle assembleDebug
-
-      - name: Run Unit Tests
-        run: |
-          gradle testDebugUnitTest
+          # Navigate to the confirmed project root directory
+          cd app/applet
+          echo "Current directory: $(pwd)"
+          
+          # Run build and tests
+          gradle :app:assembleDebug
+          gradle :app:testDebugUnitTest
