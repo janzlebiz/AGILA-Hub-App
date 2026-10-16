@@ -2,6 +2,8 @@ package com.example.ui.components
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,7 +22,7 @@ enum class BottomTab(
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home, "tab_home"),
     ANNOUNCEMENTS("Bulletins", Icons.Filled.Notifications, Icons.Outlined.Notifications, "tab_announcements"),
     ATTENDANCE("Attendance", Icons.Filled.DateRange, Icons.Outlined.DateRange, "tab_attendance"),
-    FINANCE("Finance", Icons.Filled.List, Icons.Outlined.List, "tab_finance"),
+    FINANCE("Finance", Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List, "tab_finance"),
     CONSTITUTION("RAG Q&A", Icons.Filled.Menu, Icons.Outlined.Menu, "tab_constitution"),
     PROFILE("Eagles ID", Icons.Filled.Person, Icons.Outlined.Person, "tab_profile")
 }
