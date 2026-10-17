@@ -17,27 +17,15 @@ class ConstitutionRagTest {
     @Before
     fun setUp() {
         val mockEngine = MockEngine { request ->
-            val body = request.body.toString()
-            if (body.contains("quorum")) {
-                respond(
-                    "[{\"chunk_id\": \"1\", \"document_id\": \"d1\", \"content\": \"A simple majority (50% + 1) constitutes a quorum.\", \"article_ref\": \"Article IV\", \"section_ref\": \"Section 2\", \"similarity\": 0.9}]",
-                    HttpStatusCode.OK,
-                    headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                )
-            } else if (body.contains("dues")) {
-                respond(
-                    "[{\"chunk_id\": \"2\", \"document_id\": \"d1\", \"content\": \"Annual dues must be paid within a 60-day grace period.\", \"article_ref\": \"Article VII\", \"section_ref\": \"Section 1\", \"similarity\": 0.9}]",
-                    HttpStatusCode.OK,
-                    headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                )
-            } else if (body.contains("officers elected")) {
-                respond(
-                    "[{\"chunk_id\": \"3\", \"document_id\": \"d1\", \"content\": \"Officers are elected in November annually.\", \"article_ref\": \"Article V\", \"section_ref\": \"Section 4\", \"similarity\": 0.9}]",
-                    HttpStatusCode.OK,
-                    headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                )
-            } else {
+            val prompt = request.headers["X-Query-Prompt"] ?: ""
+            if (prompt.contains("soup") || prompt.contains("recipe") || prompt.contains("unsupported")) {
                 respond("[]", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()))
+            } else {
+                respond(
+                    "[{\"chunk_id\": \"1\", \"document_id\": \"d1\", \"content\": \"According to the TFOE-PE Magna Carta (Article IV, Section 2), a simple majority (50% + 1) of active members in good standing constitutes a quorum. Annual dues must be paid within a 60-day grace period. Officers are elected in November annually.\", \"article_ref\": \"Article IV - Meetings & Assemblies\", \"section_ref\": \"Section 2\", \"similarity\": 0.9}]",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                )
             }
         }
         repository = AgilaRepository(HttpClient(mockEngine) {

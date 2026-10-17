@@ -224,6 +224,14 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
             }
             
             if (response.status.value in 200..299) {
+                _invitations.value = _invitations.value.map {
+                    if (it.tokenHash == cleanToken) it.copy(isRedeemed = true) else it
+                }
+                val newMember = _currentMember.value.copy(
+                    nickname = nickname.ifBlank { _currentMember.value.nickname },
+                    status = MemberStatus.ACTIVE
+                )
+                _currentMember.value = newMember
                 _isAuthenticated.value = true
                 logAudit("REDEEM_INVITATION_SUCCESS", "InvitationToken", cleanToken.take(8))
                 true
@@ -374,6 +382,7 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
         return try {
             val response: List<com.example.data.api.SearchConstitutionResponse> = httpClient.post("/rest/v1/rpc/search_constitution") {
                 contentType(ContentType.Application.Json)
+                header("X-Query-Prompt", prompt)
                 setBody(com.example.data.api.SearchConstitutionRequest(
                     queryEmbedding = queryEmbedding.toList(),
                     matchThreshold = 0.15f,

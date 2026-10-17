@@ -6,6 +6,7 @@ import com.example.data.repository.AgilaRepository
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -17,15 +18,33 @@ class AuthAndOrganizationTest {
 
     @Before
     fun setUp() {
+        val redeemedTokens = mutableSetOf<String>()
         val mockEngine = MockEngine { request ->
-            val body = request.body.toString()
-            if (body.contains("valid-token-123") || body.contains("hash-abc12345")) {
-                respond("true", HttpStatusCode.OK)
+            val body = request.body.toByteArray().decodeToString()
+            if (body.contains("\"p_token_hash\":\"")) {
+                val tokenStart = body.indexOf("\"p_token_hash\":\"") + 16
+                val tokenEnd = body.indexOf("\"", tokenStart)
+                val token = body.substring(tokenStart, tokenEnd)
+                
+                val isKnownToken = token == "valid-token-123" || repository.invitations.value.any { it.tokenHash == token }
+                
+                if (token.isBlank() || !isKnownToken) {
+                    respond("false", HttpStatusCode.Unauthorized)
+                } else if (redeemedTokens.contains(token)) {
+                    respond("false", HttpStatusCode.Forbidden)
+                } else {
+                    redeemedTokens.add(token)
+                    respond("true", HttpStatusCode.OK)
+                }
             } else {
-                respond("false", HttpStatusCode.Unauthorized)
+                respond("false", HttpStatusCode.BadRequest)
             }
         }
-        repository = AgilaRepository(HttpClient(mockEngine))
+        repository = AgilaRepository(HttpClient(mockEngine) {
+            install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+                json(kotlinx.serialization.json.Json { ignoreUnknownKeys = true })
+            }
+        })
     }
 
     @Test
