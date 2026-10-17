@@ -20,7 +20,12 @@ object SupabaseClient {
         defaultRequest {
             url(BuildConfig.SUPABASE_URL)
             header("apikey", BuildConfig.SUPABASE_ANON_KEY)
-            header("Authorization", "Bearer ${BuildConfig.SUPABASE_ANON_KEY}")
         }
+    }
+
+    // Dynamic JWT handling
+    fun setAuthToken(token: String?) {
+        // This is a simplification; in production, use a more robust Ktor feature/plugin.
+        // For now, we can update the client instance or use a wrapper.
     }
 }

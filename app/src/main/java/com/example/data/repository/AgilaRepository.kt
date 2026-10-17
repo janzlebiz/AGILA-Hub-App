@@ -19,28 +19,14 @@ import kotlin.math.sqrt
 class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
 
     // Current Session & Theme State
-    private val _isAuthenticated = MutableStateFlow(true)
+    private val _isAuthenticated = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
 
     private val _isDarkMode = MutableStateFlow(false)
     val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
 
-    private val _currentMember = MutableStateFlow(
-        MemberProfile(
-            id = "mem-101",
-            userId = "usr-888",
-            fullName = "Janzle B. Santos",
-            nickname = "Janzle",
-            email = "janzle.business@gmail.com",
-            status = MemberStatus.ACTIVE,
-            primaryClubName = "Bantayog Elite Eagles Club",
-            primaryClubCode = "BEEC",
-            regionName = "Bicol Camarines Norte Bantayog Region 1 (BCNBR-1)",
-            eaglesIdFrontUrl = "https://example.com/eagles_id_front.jpg",
-            eaglesIdBackUrl = "https://example.com/eagles_id_back.jpg"
-        )
-    )
-    val currentMember: StateFlow<MemberProfile> = _currentMember.asStateFlow()
+    private val _currentMember = MutableStateFlow<MemberProfile?>(null)
+    val currentMember: StateFlow<MemberProfile?> = _currentMember.asStateFlow()
 
     private val _activeRoles = MutableStateFlow(
         listOf(
@@ -340,7 +326,7 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
     suspend fun uploadEaglesId(isFront: Boolean, imageBytes: ByteArray): String? {
         val fileName = "${_currentMember.value.id}_${if (isFront) "front" else "back"}.jpg"
         val bucketName = "eagles-id-cards"
-        val path = "private/$fileName"
+        val path = "private/${_currentMember.value?.userId}/$fileName"
 
         return try {
             val response: HttpResponse = httpClient.post("/storage/v1/object/$bucketName/$path") {

@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                         topBar = {
                             AgilaTopBar(
                                 title = if (showAdminDashboard) "Admin Governance" else "AGILA Hub",
-                                clubCode = memberProfile.primaryClubCode,
+                                clubCode = memberProfile?.primaryClubCode ?: "GUEST",
                                 isDarkMode = isDarkMode,
                                 onToggleDarkMode = { repository.toggleDarkMode() },
                                 onAdminClick = if (isOfficer) { { showAdminDashboard = !showAdminDashboard } } else null
@@ -146,7 +146,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                     BottomTab.PROFILE -> ProfileScreen(
-                                        member = memberProfile,
+                                        member = memberProfile ?: MemberProfile(id = "GUEST", userId = "GUEST", fullName = "Guest", nickname = "Guest", email = "", status = MemberStatus.PENDING),
                                         roles = activeRoles,
                                         isDarkMode = isDarkMode,
                                         onToggleDarkMode = { repository.toggleDarkMode() },
