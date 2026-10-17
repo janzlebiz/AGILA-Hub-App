@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,14 +34,18 @@ import com.example.ui.theme.ForestGreenSecondary
 @Composable
 fun ConstitutionRagScreen(
     documents: List<DocItem>,
-    onQueryConstitution: (prompt: String) -> ConstitutionQueryResult,
+    onQueryConstitution: suspend (prompt: String) -> ConstitutionQueryResult,
     modifier: Modifier = Modifier
 ) {
     var queryInput by remember { mutableStateOf("What is the quorum requirement for regular club meetings?") }
     var currentResult by remember { mutableStateOf<ConstitutionQueryResult?>(null) }
+    val scope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        isLoading = true
         currentResult = onQueryConstitution(queryInput)
+        isLoading = false
     }
 
     LazyColumn(
@@ -101,19 +106,28 @@ fun ConstitutionRagScreen(
                 Button(
                     onClick = {
                         if (queryInput.isNotBlank()) {
-                            currentResult = onQueryConstitution(queryInput)
+                            scope.launch {
+                                isLoading = true
+                                currentResult = onQueryConstitution(queryInput)
+                                isLoading = false
+                            }
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
                         .testTag("submit_rag_query_button"),
+                    enabled = !isLoading,
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = EagleBluePrimary)
                 ) {
-                    Icon(Icons.Default.Info, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Search & Retrieve Answer", fontWeight = FontWeight.Bold)
+                    if (isLoading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(Icons.Default.Info, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Search & Retrieve Answer", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

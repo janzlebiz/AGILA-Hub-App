@@ -3,6 +3,10 @@ package com.example
 import com.example.data.models.MemberStatus
 import com.example.data.models.RoleCode
 import com.example.data.repository.AgilaRepository
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -13,11 +17,19 @@ class AuthAndOrganizationTest {
 
     @Before
     fun setUp() {
-        repository = AgilaRepository()
+        val mockEngine = MockEngine { request ->
+            val body = request.body.toString()
+            if (body.contains("valid-token-123") || body.contains("hash-abc12345")) {
+                respond("true", HttpStatusCode.OK)
+            } else {
+                respond("false", HttpStatusCode.Unauthorized)
+            }
+        }
+        repository = AgilaRepository(HttpClient(mockEngine))
     }
 
     @Test
-    fun testValidInvitationRedemption_Succeeds() {
+    fun testValidInvitationRedemption_Succeeds() = runTest {
         val result = repository.redeemInvitation("valid-token-123", "Kuya Janzle")
         assertTrue("Valid invitation token must be redeemed successfully", result)
 
@@ -27,19 +39,19 @@ class AuthAndOrganizationTest {
     }
 
     @Test
-    fun testEmptyInvitationToken_Fails() {
+    fun testEmptyInvitationToken_Fails() = runTest {
         val result = repository.redeemInvitation("   ", "Kuya Hacker")
         assertFalse("Empty token must be rejected", result)
     }
 
     @Test
-    fun testArbitraryNonemptyToken_FailsClosed() {
+    fun testArbitraryNonemptyToken_FailsClosed() = runTest {
         val result = repository.redeemInvitation("arbitrary-unregistered-token", "Kuya Adversary")
         assertFalse("Arbitrary non-empty token must be rejected by server validation", result)
     }
 
     @Test
-    fun testReplayedInvitationToken_FailsClosed() {
+    fun testReplayedInvitationToken_FailsClosed() = runTest {
         val inv = repository.createInvitation("invitee@eagles.ph", RoleCode.MEMBER, "BEEC")
         val firstRedeem = repository.redeemInvitation(inv.tokenHash, "Kuya Invitee")
         assertTrue("First redemption must succeed", firstRedeem)

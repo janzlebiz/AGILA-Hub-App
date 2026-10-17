@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,11 +40,13 @@ fun ProfileScreen(
     roles: List<RoleAssignment>,
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
-    onUpdateEaglesId: (front: String?, back: String?) -> Unit,
+    onUploadEaglesId: suspend (isFront: Boolean, imageBytes: ByteArray) -> String?,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showUploadSuccess by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Column(
         modifier = modifier
@@ -248,9 +251,22 @@ fun ProfileScreen(
                 contract = ActivityResultContracts.PickVisualMedia()
             ) { uri: Uri? ->
                 if (uri != null) {
-                    // Simulate server confirmation of file validation & secure storage upload
-                    onUpdateEaglesId(uri.toString(), null)
-                    showUploadSuccess = true
+                    scope.launch {
+                        try {
+                            val inputStream = context.contentResolver.openInputStream(uri)
+                            val bytes = inputStream?.readBytes()
+                            inputStream?.close()
+                            
+                            if (bytes != null) {
+                                val result = onUploadEaglesId(true, bytes)
+                                if (result != null) {
+                                    showUploadSuccess = true
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // Error handling could be added here
+                        }
+                    }
                 }
             }
 

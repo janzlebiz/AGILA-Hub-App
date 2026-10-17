@@ -150,8 +150,8 @@ class MainActivity : ComponentActivity() {
                                         roles = activeRoles,
                                         isDarkMode = isDarkMode,
                                         onToggleDarkMode = { repository.toggleDarkMode() },
-                                        onUpdateEaglesId = { front, back ->
-                                            repository.updateEaglesId(front, back)
+                                        onUploadEaglesId = { isFront, bytes ->
+                                            repository.uploadEaglesId(isFront, bytes)
                                         },
                                         onSignOut = {
                                             repository.signOut()

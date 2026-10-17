@@ -1,15 +1,19 @@
 package com.example.data.models
 
+import kotlinx.serialization.Serializable
 import java.util.Date
 
+@Serializable
 enum class OrgType {
     NATIONAL, REGION, CLUB
 }
 
+@Serializable
 enum class MemberStatus {
     PENDING, ACTIVE, SUSPENDED, REVOKED
 }
 
+@Serializable
 enum class RoleCode(val displayName: String) {
     MEMBER("Member"),
     CLUB_OFFICER("Club Officer"),
@@ -19,18 +23,22 @@ enum class RoleCode(val displayName: String) {
     NATIONAL_OFFICER("National Officer")
 }
 
+@Serializable
 enum class AnnouncementStatus {
     DRAFT, PUBLISHED, ARCHIVED
 }
 
+@Serializable
 enum class AttendanceState {
     PRESENT, ABSENT, EXCUSED
 }
 
+@Serializable
 enum class ContributionStatus {
     PENDING, VERIFIED, CORRECTED, CANCELLED
 }
 
+@Serializable
 data class Organization(
     val id: String,
     val name: String,
@@ -39,6 +47,7 @@ data class Organization(
     val parentId: String? = null
 )
 
+@Serializable
 data class MemberProfile(
     val id: String,
     val userId: String?,
@@ -53,6 +62,7 @@ data class MemberProfile(
     val eaglesIdBackUrl: String? = null
 )
 
+@Serializable
 data class RoleAssignment(
     val id: String,
     val role: RoleCode,
@@ -61,6 +71,7 @@ data class RoleAssignment(
     val isActive: Boolean = true
 )
 
+@Serializable
 data class Invitation(
     val id: String,
     val tokenHash: String,
@@ -71,6 +82,7 @@ data class Invitation(
     val expiresAt: String
 )
 
+@Serializable
 data class Announcement(
     val id: String,
     val title: String,
@@ -81,6 +93,7 @@ data class Announcement(
     val publishedAt: String
 )
 
+@Serializable
 data class EventItem(
     val id: String,
     val title: String,
@@ -90,6 +103,7 @@ data class EventItem(
     val totalAttendees: Int = 0
 )
 
+@Serializable
 data class AttendanceRecord(
     val id: String,
     val eventId: String,
@@ -101,6 +115,7 @@ data class AttendanceRecord(
     val recordedAt: String
 )
 
+@Serializable
 data class ContributionRecord(
     val id: String,
     val memberId: String,
@@ -113,6 +128,7 @@ data class ContributionRecord(
     val recordedBy: String
 )
 
+@Serializable
 data class DocItem(
     val id: String,
     val title: String,
@@ -121,6 +137,7 @@ data class DocItem(
     val isRestricted: Boolean = false
 )
 
+@Serializable
 data class ConstitutionQueryResult(
     val query: String,
     val answer: String,
@@ -129,6 +146,7 @@ data class ConstitutionQueryResult(
     val abstentionReason: String? = null
 )
 
+@Serializable
 data class Citation(
     val documentTitle: String,
     val articleRef: String,
@@ -136,6 +154,7 @@ data class Citation(
     val excerpt: String
 )
 
+@Serializable
 data class AuditEvent(
     val id: String,
     val actorName: String,
