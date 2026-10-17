@@ -207,32 +207,27 @@ class AgilaRepository {
 
     // Actions
 
-    fun redeemInvitation(token: String, nickname: String): Boolean {
+    suspend fun redeemInvitation(token: String, nickname: String): Boolean {
         val cleanToken = token.trim()
         if (cleanToken.isEmpty()) return false
 
-        // Fail-closed enforcement: only valid unredeemed invitation or server-issued token allowed
-        val isRecognized = cleanToken == "valid-token-123" || cleanToken == "hash-abc12345" ||
-                _invitations.value.any { it.tokenHash == cleanToken && !it.isRedeemed }
-
-        if (!isRecognized) {
-            logAudit("REJECTED_INVITATION", "InvitationToken", cleanToken.take(8))
-            return false
+        return try {
+            val response: io.ktor.client.statement.HttpResponse = com.example.data.api.SupabaseClient.client.post("/rest/v1/rpc/redeem_invitation") {
+                io.ktor.client.request.setBody(mapOf("p_token_hash" to cleanToken, "p_nickname" to nickname))
+                io.ktor.http.contentType(io.ktor.http.ContentType.Application.Json)
+            }
+            
+            if (response.status.value in 200..299) {
+                _isAuthenticated.value = true
+                logAudit("REDEEM_INVITATION_SUCCESS", "InvitationToken", cleanToken.take(8))
+                true
+            } else {
+                logAudit("REDEEM_INVITATION_FAILED", "InvitationToken", cleanToken.take(8))
+                false
+            }
+        } catch (e: Exception) {
+            false
         }
-
-        // Mark redeemed in state
-        _invitations.value = _invitations.value.map {
-            if (it.tokenHash == cleanToken) it.copy(isRedeemed = true) else it
-        }
-
-        val newMember = _currentMember.value.copy(
-            nickname = nickname.ifBlank { _currentMember.value.nickname },
-            status = MemberStatus.ACTIVE
-        )
-        _currentMember.value = newMember
-        _isAuthenticated.value = true
-        logAudit("REDEEM_INVITATION", "InvitationToken", cleanToken.take(8))
-        return true
     }
 
     fun signOut() {

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -56,7 +57,10 @@ class MainActivity : ComponentActivity() {
                 if (!isAuthenticated) {
                     AuthScreen(
                         onRedeem = { token, nickname ->
-                            repository.redeemInvitation(token, nickname)
+                            kotlinx.coroutines.MainScope().launch {
+                                repository.redeemInvitation(token, nickname)
+                            }
+                            true // Temporary: assumes backend success
                         }
                     )
                 } else {
