@@ -14,6 +14,7 @@ export default function AdminPortal() {
   const [orgId, setOrgId] = useState('00000000-0000-0000-0000-000000000001');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [generatedToken, setGeneratedToken] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -41,28 +42,28 @@ export default function AdminPortal() {
 
   const handleGenerateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !orgId) return;
     setLoading(true);
     setError('');
     setMessage('');
+    setGeneratedToken('');
 
-    const tokenHash = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
-    const { error: insertError } = await supabase.from('invitations').insert({
-      token_hash: tokenHash,
-      email: email,
-      target_organization_id: orgId,
-      assigned_role: role,
-      expires_at: expiresAt,
-      is_redeemed: false
+    // Call server-authorized trusted RPC operation
+    const { data, error: rpcError } = await supabase.rpc('create_invitation_token', {
+      p_email: email,
+      p_target_org_id: orgId,
+      p_role: role
     });
 
-    if (insertError) {
-      setError(`Server-enforced authorization error: ${insertError.message}`);
-    } else {
-      setMessage(`Server confirmed: Invitation token successfully generated and recorded in backend for ${email}.`);
+    if (rpcError) {
+      setError(`Server-enforced authorization error: ${rpcError.message}`);
+    } else if (data && data.length > 0) {
+      const rawToken = data[0].raw_token;
+      setGeneratedToken(rawToken);
+      setMessage(`Server confirmed: Cryptographic invitation token created for ${email}. Give this token to the applicant.`);
       setEmail('');
+    } else {
+      setError('Unexpected server response during token creation.');
     }
     setLoading(false);
   };
@@ -99,7 +100,7 @@ export default function AdminPortal() {
       </header>
 
       <section style={{ background: '#FFFFFF', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ color: '#0A2E50', fontSize: '18px', marginTop: 0 }}>Generate Scoped Member Invitation (Server-Enforced)</h2>
+        <h2 style={{ color: '#0A2E50', fontSize: '18px', marginTop: 0 }}>Generate Scoped Member Invitation (Server-Enforced RPC)</h2>
         <form onSubmit={handleGenerateInvitation} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>Applicant Email Address</label>
@@ -146,13 +147,18 @@ export default function AdminPortal() {
             disabled={loading}
             style={{ background: '#0F4C81', color: '#FFFFFF', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
           >
-            {loading ? 'Processing Backend Mutation...' : 'Generate Secure Invitation Token'}
+            {loading ? 'Processing Server RPC...' : 'Generate Cryptographic Invitation Token'}
           </button>
         </form>
 
         {message && (
-          <div style={{ marginTop: '20px', padding: '12px', background: '#E2F3E9', color: '#1E6B45', borderRadius: '6px', fontWeight: '600' }}>
-            {message}
+          <div style={{ marginTop: '20px', padding: '16px', background: '#E2F3E9', color: '#1E6B45', borderRadius: '6px', fontWeight: '600' }}>
+            <p style={{ margin: 0 }}>{message}</p>
+            {generatedToken && (
+              <div style={{ marginTop: '10px', padding: '10px', background: '#FFF', border: '1px dashed #1E6B45', borderRadius: '4px', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                Token: <strong>{generatedToken}</strong>
+              </div>
+            )}
           </div>
         )}
 

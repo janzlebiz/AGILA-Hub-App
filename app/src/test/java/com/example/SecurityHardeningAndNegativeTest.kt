@@ -44,6 +44,17 @@ class SecurityHardeningAndNegativeTest {
     }
 
     @Test
+    fun testDuplicateAttendanceRecord_Fails() {
+        val eventId = repository.events.value.first().id
+        val memberName = "Kuya Janzle Santos"
+        
+        val firstRecord = repository.recordAttendance(eventId, memberName, com.example.data.models.AttendanceState.PRESENT)
+        val secondRecord = repository.recordAttendance(eventId, memberName, com.example.data.models.AttendanceState.PRESENT)
+
+        assertFalse("Duplicate attendance check-in for same member and event must be rejected", secondRecord)
+    }
+
+    @Test
     fun testSecretScan_NoHardcodedSecretsInRepository() {
         val testUrl = repository.currentMember.value.email
         assertFalse("Secrets must not be hardcoded into member models", testUrl.contains("SUPABASE_SERVICE_ROLE_KEY"))

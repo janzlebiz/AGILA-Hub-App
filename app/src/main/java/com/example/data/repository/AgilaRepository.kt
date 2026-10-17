@@ -170,13 +170,13 @@ class AgilaRepository {
         )
     }
 
-    // Helper: Cosine vector embedding generator
+    // Helper: Cosine vector embedding generator (768 dimensions)
     private fun generateEmbedding(text: String): FloatArray {
-        val vector = FloatArray(128)
+        val vector = FloatArray(768)
         val tokens = text.lowercase(Locale.getDefault()).split(Regex("\\W+")).filter { it.isNotEmpty() }
         for (token in tokens) {
             val hash = token.hashCode()
-            val index = (hash % 128 + 128) % 128
+            val index = (hash % 768 + 768) % 768
             vector[index] += 1.0f
         }
         var norm = 0.0f
