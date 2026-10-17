@@ -52,7 +52,7 @@ class AuthAndOrganizationTest {
         val result = repository.redeemInvitation("valid-token-123", "Kuya Janzle")
         assertTrue("Valid invitation token must be redeemed successfully", result)
 
-        val member = repository.currentMember.value
+        val member = repository.currentMember.value!!
         assertEquals("ACTIVE", member.status.name)
         assertEquals("Kuya Janzle", member.nickname)
     }
@@ -95,7 +95,8 @@ class AuthAndOrganizationTest {
     }
 
     @Test
-    fun testSuspendedMember_DeniedProtectedActions() {
+    fun testSuspendedMember_DeniedProtectedActions() = runTest {
+        repository.redeemInvitation("valid-token-123", "Kuya Janzle")
         // Verify active role list respects org scope boundaries
         val roles = repository.activeRoles.value
         val hasClubScope = roles.any { it.organizationName == "Bantayog Elite Eagles Club" }

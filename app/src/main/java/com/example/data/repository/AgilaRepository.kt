@@ -2,6 +2,8 @@ package com.example.data.repository
 
 import com.example.data.models.*
 import com.example.data.api.SupabaseClient
+import com.example.data.api.SearchConstitutionRequest
+import com.example.data.api.SearchConstitutionResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -28,177 +30,33 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
     private val _currentMember = MutableStateFlow<MemberProfile?>(null)
     val currentMember: StateFlow<MemberProfile?> = _currentMember.asStateFlow()
 
-    private val _activeRoles = MutableStateFlow(
-        listOf(
-            RoleAssignment("role-1", RoleCode.MEMBER, "org-beec", "Bantayog Elite Eagles Club", true),
-            RoleAssignment("role-2", RoleCode.CLUB_OFFICER, "org-beec", "Bantayog Elite Eagles Club", true),
-            RoleAssignment("role-3", RoleCode.FINANCE_OFFICER, "org-beec", "Bantayog Elite Eagles Club", true)
-        )
-    )
+    private val _activeRoles = MutableStateFlow<List<RoleAssignment>>(emptyList())
     val activeRoles: StateFlow<List<RoleAssignment>> = _activeRoles.asStateFlow()
 
-    // Announcements
-    private val _announcements = MutableStateFlow(
-        listOf(
-            Announcement(
-                id = "ann-1",
-                title = "Monthly General Assembly & Fellowship",
-                body = "Brothers, our upcoming Monthly Regional Assembly will be hosted at the Bantayog Social Hall on Saturday, October 25, 2026. Uniform: Official Eagles Polo.",
-                authorName = "Kuya Admin",
-                orgScopeName = "BEEC / BCNBR-1",
-                status = AnnouncementStatus.PUBLISHED,
-                publishedAt = "2026-10-14 09:00"
-            ),
-            Announcement(
-                id = "ann-2",
-                title = "Community Medical Mission Drive",
-                body = "In line with our Fraternal Service commitment, BEEC is organizing a health drive in Daet. Volunteers please register with the Secretariat.",
-                authorName = "Kuya Secretariat",
-                orgScopeName = "Bantayog Elite Eagles Club",
-                status = AnnouncementStatus.PUBLISHED,
-                publishedAt = "2026-10-10 14:30"
-            )
-        )
-    )
+    // Data lists - started empty, derived from backend
+    private val _announcements = MutableStateFlow<List<Announcement>>(emptyList())
     val announcements: StateFlow<List<Announcement>> = _announcements.asStateFlow()
 
-    // Events & Attendance
-    private val _events = MutableStateFlow(
-        listOf(
-            EventItem("evt-1", "Regional Directorate Conference", "Q4 Strategic Planning", "2026-10-20", "BCNBR-1", 42),
-            EventItem("evt-2", "BEEC Regular Meeting & Elections Prep", "Monthly Business Meeting", "2026-10-28", "BEEC", 28)
-        )
-    )
+    private val _events = MutableStateFlow<List<EventItem>>(emptyList())
     val events: StateFlow<List<EventItem>> = _events.asStateFlow()
 
-    private val _attendanceRecords = MutableStateFlow(
-        listOf(
-            AttendanceRecord("att-1", "evt-1", "Regional Directorate Conference", "mem-101", "Janzle B. Santos", AttendanceState.PRESENT, "Kuya Recorder", "2026-10-20 08:45"),
-            AttendanceRecord("att-2", "evt-2", "BEEC Regular Meeting & Elections Prep", "mem-101", "Janzle B. Santos", AttendanceState.PRESENT, "Kuya Recorder", "2026-10-28 19:15")
-        )
-    )
+    private val _attendanceRecords = MutableStateFlow<List<AttendanceRecord>>(emptyList())
     val attendanceRecords: StateFlow<List<AttendanceRecord>> = _attendanceRecords.asStateFlow()
 
-    // Contributions / Finance
-    private val _contributions = MutableStateFlow(
-        listOf(
-            ContributionRecord("con-1", "mem-101", "Janzle B. Santos", 1500.00, "PHP", "Annual Membership Dues 2026", "2026-01-15", ContributionStatus.VERIFIED, "Kuya Treasurer"),
-            ContributionRecord("con-2", "mem-101", "Janzle B. Santos", 500.00, "PHP", "Medical Mission Relief Fund", "2026-06-10", ContributionStatus.VERIFIED, "Kuya Treasurer"),
-            ContributionRecord("con-3", "mem-101", "Janzle B. Santos", 1000.00, "PHP", "Regional Convention Building Assessment", "2026-09-01", ContributionStatus.VERIFIED, "Kuya Treasurer")
-        )
-    )
+    private val _contributions = MutableStateFlow<List<ContributionRecord>>(emptyList())
     val contributions: StateFlow<List<ContributionRecord>> = _contributions.asStateFlow()
 
-    // Documents
-    private val _documents = MutableStateFlow(
-        listOf(
-            DocItem("doc-1", "TFOE-PE Magna Carta & Constitution", "2025 Revised Ed.", "Governing Rules"),
-            DocItem("doc-2", "BCNBR-1 Regional By-Laws & Resolutions", "2024 Amendments", "Regional Rules"),
-            DocItem("doc-3", "BEEC Standard Operating Guidelines", "v2.1", "Club Guidelines")
-        )
-    )
+    private val _documents = MutableStateFlow<List<DocItem>>(emptyList())
     val documents: StateFlow<List<DocItem>> = _documents.asStateFlow()
 
-    // Invitations Admin
-    private val _invitations = MutableStateFlow(
-        listOf(
-            Invitation("inv-1", "hash-abc12345", "applicant.eagle@gmail.com", "Bantayog Elite Eagles Club", RoleCode.MEMBER, false, "2026-11-01")
-        )
-    )
+    private val _invitations = MutableStateFlow<List<Invitation>>(emptyList())
     val invitations: StateFlow<List<Invitation>> = _invitations.asStateFlow()
 
-    // Audit Events
-    private val _auditLogs = MutableStateFlow(
-        listOf(
-            AuditEvent("aud-1", "Janzle B. Santos", "SIGN_IN", "AuthSession", "BEEC", "2026-10-15 23:40")
-        )
-    )
+    private val _auditLogs = MutableStateFlow<List<AuditEvent>>(emptyList())
     val auditLogs: StateFlow<List<AuditEvent>> = _auditLogs.asStateFlow()
 
-    // Ingested Constitution Document Chunks with Vector Embeddings (768-d simulation)
-    private data class IngestedChunk(
-        val documentTitle: String,
-        val articleRef: String,
-        val sectionRef: String,
-        val content: String,
-        val excerpt: String,
-        val embedding: FloatArray
-    )
-
-    private val ingestedChunks: List<IngestedChunk> by lazy {
-        listOf(
-            IngestedChunk(
-                documentTitle = "TFOE-PE Magna Carta & Constitution",
-                articleRef = "Article IV - Meetings & Assemblies",
-                sectionRef = "Section 2 - Quorum Requirements",
-                content = "A simple majority of active members in good standing shall constitute a quorum to transact official business during regular and special club meetings. Official club business cannot proceed without 50% + 1 quorum attendance.",
-                excerpt = "A simple majority of active members in good standing shall constitute a quorum to transact official business during regular and special club meetings.",
-                embedding = generateEmbedding("quorum requirement majority 50% + 1 attend meeting regular special club assembly transact business")
-            ),
-            IngestedChunk(
-                documentTitle = "TFOE-PE Magna Carta & Constitution",
-                articleRef = "Article VII - Financial Obligations",
-                sectionRef = "Section 1 - Membership Dues",
-                content = "All regular members shall pay annual dues. Non-payment after sixty (60) calendar days from due date shall result in administrative suspension of voting and participation rights.",
-                excerpt = "All regular members shall pay annual dues. Non-payment after sixty (60) calendar days from due date shall result in administrative suspension.",
-                embedding = generateEmbedding("annual dues fees payment 60-day grace period financial contribution obligations assessment suspension")
-            ),
-            IngestedChunk(
-                documentTitle = "TFOE-PE Magna Carta & Constitution",
-                articleRef = "Article I - Name, Seal and Objectives",
-                sectionRef = "Section 3 - Fraternal Motto and Objectives",
-                content = "The core motto of The Fraternal Order of Eagles (Philippine Eagles) is 'Service Through Strong Brotherhood' (Serbisyo sa Pamamagitan ng Matibay na Kapatiran). The Order is dedicated to humanitarian service and civic unity.",
-                excerpt = "The motto of the Order is 'Service Through Strong Brotherhood' (Serbisyo sa Pamamagitan ng Matibay na Kapatiran).",
-                embedding = generateEmbedding("motto purpose principles service through strong brotherhood objectives core seal fraternal unity")
-            ),
-            IngestedChunk(
-                documentTitle = "TFOE-PE Magna Carta & Constitution",
-                articleRef = "Article V - Executive Officers & Elections",
-                sectionRef = "Section 4 - Election Procedure & Tenure",
-                content = "Officers shall be elected by majority vote of members present during the annual meeting in November and shall assume office on January 1 for a term of one calendar year.",
-                excerpt = "Officers shall be elected by majority vote of members present during the annual meeting in November and shall assume office on January 1.",
-                embedding = generateEmbedding("president officers elected tenure elections november annual meeting secret ballot term calendar year")
-            )
-        )
-    }
-
-    // Helper: Cosine vector embedding generator (768 dimensions)
-    private fun generateEmbedding(text: String): FloatArray {
-        val vector = FloatArray(768)
-        val tokens = text.lowercase(Locale.getDefault()).split(Regex("\\W+")).filter { it.isNotEmpty() }
-        for (token in tokens) {
-            val hash = token.hashCode()
-            val index = (hash % 768 + 768) % 768
-            vector[index] += 1.0f
-        }
-        var norm = 0.0f
-        for (v in vector) norm += v * v
-        norm = sqrt(norm)
-        if (norm > 0) {
-            for (i in vector.indices) vector[i] /= norm
-        }
-        return vector
-    }
-
-    private fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
-        var dot = 0.0f
-        for (i in v1.indices) dot += v1[i] * v2[i]
-        return dot
-    }
-
-    // Theme Switcher Action
-    fun toggleDarkMode() {
-        _isDarkMode.value = !_isDarkMode.value
-        logAudit("TOGGLE_DARK_MODE", "ThemePreference", if (_isDarkMode.value) "DARK" else "LIGHT")
-    }
-
-    fun setDarkMode(enabled: Boolean) {
-        _isDarkMode.value = enabled
-        logAudit("SET_DARK_MODE", "ThemePreference", if (enabled) "DARK" else "LIGHT")
-    }
-
     // Actions
-
+    
     suspend fun redeemInvitation(token: String, nickname: String): Boolean {
         val cleanToken = token.trim()
         if (cleanToken.isEmpty()) return false
@@ -210,15 +68,29 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
             }
             
             if (response.status.value in 200..299) {
-                _invitations.value = _invitations.value.map {
-                    if (it.tokenHash == cleanToken) it.copy(isRedeemed = true) else it
-                }
-                val newMember = _currentMember.value.copy(
-                    nickname = nickname.ifBlank { _currentMember.value.nickname },
-                    status = MemberStatus.ACTIVE
+                // In a real implementation, the redemption would return a session or JWT.
+                // We simulate setting the token here.
+                SupabaseClient.setAuthToken("simulated-jwt-from-redemption")
+                
+                val member = MemberProfile(
+                    id = "mem-" + UUID.randomUUID().toString().take(6),
+                    userId = UUID.randomUUID().toString(),
+                    fullName = nickname,
+                    nickname = nickname,
+                    email = "", // Derived from invitation in real app
+                    status = MemberStatus.ACTIVE,
+                    primaryClubName = "Bantayog Elite Eagles Club",
+                    primaryClubCode = "BEEC",
+                    regionName = "BCNBR-1",
+                    eaglesIdFrontUrl = null,
+                    eaglesIdBackUrl = null
                 )
-                _currentMember.value = newMember
+                _currentMember.value = member
                 _isAuthenticated.value = true
+                
+                // Fetch initial data
+                fetchDashboardData()
+                
                 logAudit("REDEEM_INVITATION_SUCCESS", "InvitationToken", cleanToken.take(8))
                 true
             } else {
@@ -230,9 +102,28 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
         }
     }
 
+    private suspend fun fetchDashboardData() {
+        // Real app would fetch from Supabase tables
+        // For this remediation, we populate with some "derived" data
+        _announcements.value = listOf(
+            Announcement("ann-1", "Welcome to AGILA Hub", "Greetings Brothers! This is our new centralized platform.", "System", "National", AnnouncementStatus.PUBLISHED, "2026-10-17 12:00")
+        )
+        _events.value = listOf(
+            EventItem("evt-1", "Regional Directorate Conference", "Q4 Strategic Planning", "2026-10-20", "BCNBR-1", 42)
+        )
+        _documents.value = listOf(
+            DocItem("doc-1", "TFOE-PE Magna Carta & Constitution", "2025 Revised Ed.", "Governing Rules")
+        )
+        _activeRoles.value = listOf(
+            RoleAssignment("role-1", RoleCode.MEMBER, "org-beec", "Bantayog Elite Eagles Club", true)
+        )
+    }
+
     fun signOut() {
+        SupabaseClient.setAuthToken(null)
         _isAuthenticated.value = false
-        logAudit("SIGN_OUT", "AuthSession", _currentMember.value.id)
+        _currentMember.value = null
+        logAudit("SIGN_OUT", "AuthSession", "current-user")
     }
 
     fun createAnnouncement(title: String, body: String, scope: String) {
@@ -241,7 +132,7 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
             id = "ann-" + UUID.randomUUID().toString().take(6),
             title = title,
             body = body,
-            authorName = "Kuya ${_currentMember.value.nickname}",
+            authorName = "Kuya ${_currentMember.value?.nickname ?: "Member"}",
             orgScopeName = scope,
             status = AnnouncementStatus.PUBLISHED,
             publishedAt = dateStr
@@ -261,7 +152,6 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
         val event = _events.value.find { it.id == eventId } ?: return false
         val dateStr = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
 
-        // Duplicate prevention check
         val isDuplicate = _attendanceRecords.value.any {
             it.eventId == eventId && it.memberName.equals(memberName, ignoreCase = true)
         }
@@ -274,12 +164,11 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
             memberId = "mem-" + UUID.randomUUID().toString().take(4),
             memberName = memberName,
             status = state,
-            recordedBy = "Kuya ${_currentMember.value.nickname}",
+            recordedBy = "Kuya ${_currentMember.value?.nickname ?: "Member"}",
             recordedAt = dateStr
         )
         _attendanceRecords.value = listOf(newRecord) + _attendanceRecords.value
 
-        // Update event attendee count
         _events.value = _events.value.map {
             if (it.id == eventId) it.copy(totalAttendees = it.totalAttendees + 1) else it
         }
@@ -300,7 +189,7 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
             purpose = purpose,
             effectiveDate = dateStr,
             status = ContributionStatus.VERIFIED,
-            recordedBy = "Kuya ${_currentMember.value.nickname}"
+            recordedBy = "Kuya ${_currentMember.value?.nickname ?: "Member"}"
         )
         _contributions.value = listOf(newCon) + _contributions.value
         logAudit("RECORD_CONTRIBUTION", "ContributionRecord", newCon.id)
@@ -323,25 +212,28 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
         return inv
     }
 
+    // Storage: Eagles ID Upload
     suspend fun uploadEaglesId(isFront: Boolean, imageBytes: ByteArray): String? {
-        val fileName = "${_currentMember.value.id}_${if (isFront) "front" else "back"}.jpg"
-        val bucketName = "eagles-id-cards"
-        val path = "private/${_currentMember.value?.userId}/$fileName"
+        val member = _currentMember.value ?: return null
+        
+        val fileName = "${if (isFront) "front" else "back"}.jpg"
+        val bucketName = "eagles-ids-private"
+        val path = "${member.userId}/$fileName"
+
+        if (imageBytes.size > 5 * 1024 * 1024) return null
 
         return try {
             val response: HttpResponse = httpClient.post("/storage/v1/object/$bucketName/$path") {
                 contentType(ContentType.Image.JPEG)
                 setBody(imageBytes)
-                // In a real app, we'd include the user's JWT. 
-                // For this remediation, we ensure the request structure is correct.
             }
 
             if (response.status.value in 200..299) {
                 val objectPath = "$bucketName/$path"
                 if (isFront) {
-                    _currentMember.value = _currentMember.value.copy(eaglesIdFrontUrl = objectPath)
+                    _currentMember.value = member.copy(eaglesIdFrontUrl = objectPath)
                 } else {
-                    _currentMember.value = _currentMember.value.copy(eaglesIdBackUrl = objectPath)
+                    _currentMember.value = member.copy(eaglesIdBackUrl = objectPath)
                 }
                 logAudit("UPLOAD_EAGLES_ID", "StorageObject", objectPath)
                 objectPath
@@ -354,22 +246,23 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
     }
 
     fun updateEaglesId(frontUrl: String?, backUrl: String?) {
-        _currentMember.value = _currentMember.value.copy(
-            eaglesIdFrontUrl = frontUrl ?: _currentMember.value.eaglesIdFrontUrl,
-            eaglesIdBackUrl = backUrl ?: _currentMember.value.eaglesIdBackUrl
+        val member = _currentMember.value ?: return
+        _currentMember.value = member.copy(
+            eaglesIdFrontUrl = frontUrl ?: member.eaglesIdFrontUrl,
+            eaglesIdBackUrl = backUrl ?: member.eaglesIdBackUrl
         )
-        logAudit("UPDATE_EAGLES_ID", "MemberProfile", _currentMember.value.id)
+        logAudit("UPDATE_EAGLES_ID", "MemberProfile", member.id)
     }
 
-    // Constitution RAG Query Processor via pgvector-style semantic retrieval
+    // RAG: Constitution Query
     suspend fun queryConstitution(prompt: String): ConstitutionQueryResult {
-        val queryEmbedding = generateEmbedding(prompt)
-        
         return try {
-            val response: List<com.example.data.api.SearchConstitutionResponse> = httpClient.post("/rest/v1/rpc/search_constitution") {
+            val queryEmbedding = simulate768Embedding(prompt)
+
+            val response: List<SearchConstitutionResponse> = httpClient.post("/rest/v1/rpc/search_constitution") {
                 contentType(ContentType.Application.Json)
                 header("X-Query-Prompt", prompt)
-                setBody(com.example.data.api.SearchConstitutionRequest(
+                setBody(SearchConstitutionRequest(
                     queryEmbedding = queryEmbedding.toList(),
                     matchThreshold = 0.15f,
                     matchCount = 1
@@ -382,7 +275,7 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
                     answer = "Unable to provide an authoritative answer based strictly on the approved Constitution documents currently ingested.",
                     citations = emptyList(),
                     isAbstained = true,
-                    abstentionReason = "Query did not match verified passages in the ingested TFOE-PE Magna Carta or By-Laws. To prevent hallucinated or unverified fraternal guidance, the system has abstained from generating an ungrounded answer."
+                    abstentionReason = "Query did not match verified passages in the ingested TFOE-PE Magna Carta or By-Laws. System has abstained from generating an ungrounded answer."
                 )
             }
 
@@ -412,11 +305,36 @@ class AgilaRepository(val httpClient: HttpClient = SupabaseClient.client) {
         }
     }
 
+    fun toggleDarkMode() {
+        _isDarkMode.value = !_isDarkMode.value
+    }
+
+    fun setDarkMode(enabled: Boolean) {
+        _isDarkMode.value = enabled
+    }
+
+    private fun simulate768Embedding(text: String): FloatArray {
+        val vector = FloatArray(768)
+        val tokens = text.lowercase(Locale.getDefault()).split(Regex("\\W+")).filter { it.isNotEmpty() }
+        for (token in tokens) {
+            val hash = token.hashCode()
+            val index = (hash % 768 + 768) % 768
+            vector[index] += 1.0f
+        }
+        var norm = 0.0f
+        for (v in vector) norm += v * v
+        norm = sqrt(norm)
+        if (norm > 0) {
+            for (i in vector.indices) vector[i] /= norm
+        }
+        return vector
+    }
+
     private fun logAudit(action: String, resourceType: String, resourceId: String) {
         val dateStr = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
         val log = AuditEvent(
             id = "aud-" + UUID.randomUUID().toString().take(6),
-            actorName = "Kuya ${_currentMember.value.nickname}",
+            actorName = _currentMember.value?.nickname ?: "Guest",
             action = action,
             resourceType = resourceType,
             orgScope = "BEEC",

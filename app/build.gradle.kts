@@ -15,8 +15,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "SUPABASE_URL", "\"https://staging-agila-hub.supabase.co\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.staging-anon-key-placeholder\"")
+        val supabaseUrl = System.getenv("SUPABASE_URL") ?: ""
+        val supabaseKey = System.getenv("SUPABASE_ANON_KEY") ?: ""
+
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseKey\"")
     }
 
     compileOptions {

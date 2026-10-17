@@ -6,13 +6,32 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+
 class SecurityHardeningAndNegativeTest {
 
     private lateinit var repository: AgilaRepository
 
     @Before
     fun setUp() {
-        repository = AgilaRepository()
+        val mockEngine = MockEngine { request ->
+            respond("true", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()))
+        }
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+        repository = AgilaRepository(client)
     }
 
     @Test
@@ -44,7 +63,8 @@ class SecurityHardeningAndNegativeTest {
     }
 
     @Test
-    fun testDuplicateAttendanceRecord_Fails() {
+    fun testDuplicateAttendanceRecord_Fails() = kotlinx.coroutines.test.runTest {
+        repository.redeemInvitation("valid", "Tester")
         val eventId = repository.events.value.first().id
         val memberName = "Kuya Janzle Santos"
         
@@ -55,8 +75,9 @@ class SecurityHardeningAndNegativeTest {
     }
 
     @Test
-    fun testSecretScan_NoHardcodedSecretsInRepository() {
-        val testUrl = repository.currentMember.value.email
+    fun testSecretScan_NoHardcodedSecretsInRepository() = kotlinx.coroutines.test.runTest {
+        repository.redeemInvitation("valid", "Tester")
+        val testUrl = repository.currentMember.value!!.email
         assertFalse("Secrets must not be hardcoded into member models", testUrl.contains("SUPABASE_SERVICE_ROLE_KEY"))
     }
 

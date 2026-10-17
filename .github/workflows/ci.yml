@@ -20,13 +20,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Build Android App & Run Unit Tests
         run: |
+          # Set dummy env vars for build to prevent fail-closed error if needed
+          export SUPABASE_URL="https://ci-dummy.supabase.co"
+          export SUPABASE_ANON_KEY="ci-dummy-key"
           gradle :app:assembleDebug
           gradle :app:testDebugUnitTest
 
@@ -38,11 +41,10 @@ jobs:
 
       - name: Validate SQL Migrations
         run: |
-          echo "Running migration integration tests..."
-          # Here we would typically use a tool like 'supabase db push' to validate against a staging db.
-          # For this CI step, we ensure files are formatted correctly.
-          grep -E "CREATE POLICY|CREATE TABLE|INSERT INTO" supabase/migrations/*.sql
-          echo "SQL migrations syntax validation passed."
+          echo "Running migration structural validation..."
+          # Running the dedicated Kotlin test for migration validation
+          gradle :app:testDebugUnitTest --tests "com.example.SqlMigrationValidationTest"
+          echo "SQL migrations validation passed."
 
   release-build:
     needs: static-analysis-and-build
@@ -55,7 +57,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build Release APK
-        run: gradle :app:assembleRelease
+        run: |
+          export SUPABASE_URL="https://prod-agila-hub.supabase.co"
+          export SUPABASE_ANON_KEY="prod-placeholder-key"
+          gradle :app:assembleRelease
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

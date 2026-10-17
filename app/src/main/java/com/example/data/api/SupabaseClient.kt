@@ -10,6 +10,8 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 object SupabaseClient {
+    private var authToken: String? = null
+
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(Json {
@@ -20,12 +22,13 @@ object SupabaseClient {
         defaultRequest {
             url(BuildConfig.SUPABASE_URL)
             header("apikey", BuildConfig.SUPABASE_ANON_KEY)
+            authToken?.let {
+                header("Authorization", "Bearer $it")
+            }
         }
     }
 
-    // Dynamic JWT handling
     fun setAuthToken(token: String?) {
-        // This is a simplification; in production, use a more robust Ktor feature/plugin.
-        // For now, we can update the client instance or use a wrapper.
+        authToken = token
     }
 }

@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+function getSupabaseClient(): SupabaseClient | null {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null;
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 export default function AdminPortal() {
+  const [supabase] = useState<SupabaseClient | null>(() => getSupabaseClient());
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('CLUB_OFFICER');
@@ -18,6 +24,8 @@ export default function AdminPortal() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!supabase) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
@@ -29,10 +37,14 @@ export default function AdminPortal() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      setError('Supabase client is not configured. Failed closed.');
+      return;
+    }
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
@@ -42,17 +54,21 @@ export default function AdminPortal() {
 
   const handleGenerateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      setError('Supabase client is not configured. Failed closed.');
+      return;
+    }
     if (!email || !orgId) return;
+
     setLoading(true);
     setError('');
     setMessage('');
     setGeneratedToken('');
 
-    // Call server-authorized trusted RPC operation
     const { data, error: rpcError } = await supabase.rpc('create_invitation_token', {
       p_email: email,
       p_target_org_id: orgId,
-      p_role: role
+      p_role: role,
     });
 
     if (rpcError) {
@@ -68,12 +84,26 @@ export default function AdminPortal() {
     setLoading(false);
   };
 
+  if (!supabase) {
+    return (
+      <main style={{ padding: '60px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        <h1 style={{ color: '#0F4C81' }}>AGILA Hub — Admin Portal</h1>
+        <div style={{ background: '#FEE2E2', border: '1px solid #EF4444', color: '#991B1B', padding: '20px', borderRadius: '8px', marginTop: '20px' }}>
+          <h3 style={{ margin: '0 0 8px 0' }}>Production Configuration Missing</h3>
+          <p style={{ margin: 0, fontSize: '14px' }}>
+            NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined. The portal has failed closed for security.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   if (!session) {
     return (
       <main style={{ padding: '60px', fontFamily: 'sans-serif', maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
         <h1 style={{ color: '#0F4C81' }}>AGILA Hub — Admin Portal</h1>
         <p style={{ color: '#475569' }}>Please authenticate with authorized officer credentials via Supabase Auth.</p>
-        <button 
+        <button
           onClick={handleSignIn}
           style={{ background: '#0F4C81', color: '#FFF', padding: '14px 24px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginTop: '20px' }}
         >
@@ -91,7 +121,7 @@ export default function AdminPortal() {
           <h1 style={{ color: '#0F4C81', margin: 0 }}>AGILA Hub — Vercel Administrative Portal</h1>
           <p style={{ color: '#475569', margin: '5px 0 0 0' }}>Authenticated Officer: {session.user.email}</p>
         </div>
-        <button 
+        <button
           onClick={() => supabase.auth.signOut()}
           style={{ background: '#EF4444', color: '#FFF', padding: '8px 16px', borderRadius: '6px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
         >
@@ -104,20 +134,19 @@ export default function AdminPortal() {
         <form onSubmit={handleGenerateInvitation} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>Applicant Email Address</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              placeholder="applicant@eagles.ph" 
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="applicant@eagles.ph"
               required
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }}
             />
           </div>
-
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>Assigned Fraternal Role</label>
-            <select 
-              value={role} 
+            <select
+              value={role}
               onChange={(e) => setRole(e.target.value)}
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }}
             >
@@ -129,20 +158,18 @@ export default function AdminPortal() {
               <option value="NATIONAL_OFFICER">National Officer</option>
             </select>
           </div>
-
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px' }}>Trusted Organization UUID</label>
-            <input 
-              type="text" 
-              value={orgId} 
-              onChange={(e) => setOrgId(e.target.value)} 
+            <input
+              type="text"
+              value={orgId}
+              onChange={(e) => setOrgId(e.target.value)}
               placeholder="00000000-0000-0000-0000-000000000001"
               required
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }}
             />
           </div>
-
-          <button 
+          <button
             type="submit"
             disabled={loading}
             style={{ background: '#0F4C81', color: '#FFFFFF', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}

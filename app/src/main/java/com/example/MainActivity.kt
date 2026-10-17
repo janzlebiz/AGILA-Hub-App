@@ -13,6 +13,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.models.MemberProfile
+import com.example.data.models.MemberStatus
 import com.example.data.models.RoleCode
 import com.example.data.repository.AgilaRepository
 import com.example.ui.components.AgilaBottomNav
@@ -103,7 +105,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 when (currentTab) {
                                     BottomTab.HOME -> HomeScreen(
-                                        member = memberProfile,
+                                        member = memberProfile ?: MemberProfile(id = "GUEST", userId = "GUEST", fullName = "Guest", nickname = "Guest", email = "", status = MemberStatus.PENDING),
                                         roles = activeRoles,
                                         announcements = announcements,
                                         onQuickAction = { tabKey ->
