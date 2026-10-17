@@ -184,24 +184,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
--- Sample RLS Policy: Active members can view published announcements in their organization scope
-CREATE POLICY "Active members view announcements"
-ON announcements FOR SELECT
-USING (
-    check_is_active_member(auth.uid()) AND
-    status = 'PUBLISHED'
+-- Helper Function: Get all organization IDs a user belongs to
+CREATE OR REPLACE FUNCTION get_user_org_ids()
+RETURNS SETOF UUID AS $$
+BEGIN
+    RETURN QUERY
+    SELECT organization_id
+    FROM organization_memberships om
+    JOIN members m ON m.id = om.member_id
+    WHERE m.user_id = auth.uid() AND m.status = 'ACTIVE';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+-- Comprehensive RLS Policies for all tables with Organizational Scoping
+CREATE POLICY "Public read organizations" ON organizations FOR SELECT USING (true);
+
+CREATE POLICY "Members view members in same org" ON members FOR SELECT USING (
+    id IN (
+        SELECT member_id FROM organization_memberships 
+        WHERE organization_id IN (SELECT get_user_org_ids())
+    ) OR user_id = auth.uid()
 );
 
--- Comprehensive RLS Policies for all tables
-CREATE POLICY "Public read organizations" ON organizations FOR SELECT USING (true);
-CREATE POLICY "Active members view members" ON members FOR SELECT USING (check_is_active_member(auth.uid()));
 CREATE POLICY "Members view own membership" ON organization_memberships FOR SELECT USING (
-    member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid()) OR
+    organization_id IN (SELECT get_user_org_ids())
 );
+
 CREATE POLICY "Members view own roles" ON role_assignments FOR SELECT USING (
-    member_id IN (SELECT id FROM members WHERE user_id = auth.uid())
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid()) OR
+    organization_id IN (SELECT get_user_org_ids())
 );
-CREATE POLICY "Officers view invitations" ON invitations FOR SELECT USING (
+
+CREATE POLICY "Officers view invitations for their org" ON invitations FOR SELECT USING (
+    target_organization_id IN (SELECT get_user_org_ids()) AND
     EXISTS (
         SELECT 1 FROM role_assignments ra
         JOIN members m ON m.id = ra.member_id
@@ -209,29 +225,54 @@ CREATE POLICY "Officers view invitations" ON invitations FOR SELECT USING (
         AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
     )
 );
-CREATE POLICY "Active members view events" ON events FOR SELECT USING (check_is_active_member(auth.uid()));
-CREATE POLICY "Active members view attendance" ON attendance_records FOR SELECT USING (check_is_active_member(auth.uid()));
-CREATE POLICY "Members view own contributions" ON contributions FOR SELECT USING (
+
+CREATE POLICY "Members view announcements for their org" ON announcements FOR SELECT USING (
+    organization_id IN (SELECT get_user_org_ids()) AND
+    status = 'PUBLISHED'
+);
+
+CREATE POLICY "Members view events for their org" ON events FOR SELECT USING (
+    organization_id IN (SELECT get_user_org_ids())
+);
+
+CREATE POLICY "Members view own attendance" ON attendance_records FOR SELECT USING (
     member_id IN (SELECT id FROM members WHERE user_id = auth.uid()) OR
     EXISTS (
-        SELECT 1 FROM role_assignments ra
-        JOIN members m ON m.id = ra.member_id
-        WHERE m.user_id = auth.uid() AND ra.is_active = true
-        AND ra.role IN ('FINANCE_OFFICER', 'CLUB_ADMIN')
+        SELECT 1 FROM events e
+        WHERE e.id = attendance_records.event_id
+          AND e.organization_id IN (SELECT get_user_org_ids())
     )
 );
-CREATE POLICY "Active members view documents" ON documents FOR SELECT USING (
-    check_is_active_member(auth.uid()) AND visibility != 'RESTRICTED'
+
+CREATE POLICY "Members view own contributions" ON contributions FOR SELECT USING (
+    member_id IN (SELECT id FROM members WHERE user_id = auth.uid()) OR
+    (
+        organization_id IN (SELECT get_user_org_ids()) AND
+        EXISTS (
+            SELECT 1 FROM role_assignments ra
+            JOIN members m ON m.id = ra.member_id
+            WHERE m.user_id = auth.uid() AND ra.is_active = true
+            AND ra.role IN ('FINANCE_OFFICER', 'CLUB_ADMIN')
+        )
+    )
 );
-CREATE POLICY "Active members view document chunks" ON document_chunks FOR SELECT USING (
-    check_is_active_member(auth.uid()) AND
+
+CREATE POLICY "Members view documents for their org" ON documents FOR SELECT USING (
+    organization_id IN (SELECT get_user_org_ids()) AND
+    visibility != 'RESTRICTED'
+);
+
+CREATE POLICY "Members view document chunks for their org" ON document_chunks FOR SELECT USING (
     EXISTS (
         SELECT 1 FROM documents d
         WHERE d.id = document_chunks.document_id
+          AND d.organization_id IN (SELECT get_user_org_ids())
           AND d.visibility != 'RESTRICTED'
     )
 );
-CREATE POLICY "Officers view audit events" ON audit_events FOR SELECT USING (
+
+CREATE POLICY "Officers view audit events for their org" ON audit_events FOR SELECT USING (
+    organization_id IN (SELECT get_user_org_ids()) AND
     EXISTS (
         SELECT 1 FROM role_assignments ra
         JOIN members m ON m.id = ra.member_id
@@ -240,13 +281,18 @@ CREATE POLICY "Officers view audit events" ON audit_events FOR SELECT USING (
     )
 );
 
+
 -- Secure Server-Validated Invitation Redemption RPC Function
 CREATE OR REPLACE FUNCTION redeem_invitation(p_token_hash TEXT, p_nickname TEXT)
 RETURNS BOOLEAN AS $$
 DECLARE
     v_inv invitations%ROWTYPE;
     v_member_id UUID;
+    v_auth_email TEXT;
 BEGIN
+    -- Get authenticated user email from JWT
+    v_auth_email := auth.jwt() ->> 'email';
+
     -- Validate token exists, unredeemed, unrevoked, and not expired
     SELECT * INTO v_inv
     FROM invitations
@@ -259,7 +305,12 @@ BEGIN
         RAISE EXCEPTION 'Invalid, expired, or already redeemed invitation token.';
     END IF;
 
-    -- Mark invitation redeemed
+    -- Verify authenticated user email matches invitation email
+    IF v_auth_email IS NOT NULL AND v_inv.email != v_auth_email THEN
+        RAISE EXCEPTION 'Authenticated user email does not match invitation recipient email.';
+    END IF;
+
+    -- Mark invitation redeemed atomically
     UPDATE invitations
     SET is_redeemed = true
     WHERE id = v_inv.id;
@@ -282,5 +333,49 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+-- Constitution pgvector Semantic Search RPC Function
+CREATE OR REPLACE FUNCTION search_constitution(query_embedding VECTOR(768), match_threshold FLOAT, match_count INT)
+RETURNS TABLE (
+    chunk_id UUID,
+    document_id UUID,
+    content TEXT,
+    article_ref TEXT,
+    section_ref TEXT,
+    similarity FLOAT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        dc.id,
+        dc.document_id,
+        dc.content,
+        dc.article_ref,
+        dc.section_ref,
+        1 - (dc.embedding <=> query_embedding) AS similarity
+    FROM document_chunks dc
+    JOIN documents d ON d.id = dc.document_id
+    WHERE check_is_active_member(auth.uid())
+      AND d.visibility != 'RESTRICTED'
+      AND 1 - (dc.embedding <=> query_embedding) > match_threshold
+    ORDER BY dc.embedding <=> query_embedding ASC
+    LIMIT match_count;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+-- Explicit Function Execution Permissions Grant & Revoke
+REVOKE EXECUTE ON FUNCTION get_user_org_ids FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION get_user_org_ids TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION check_is_active_member FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION check_is_active_member TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION redeem_invitation FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION redeem_invitation TO authenticated;
+
+REVOKE EXECUTE ON FUNCTION search_constitution FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION search_constitution TO authenticated;
+
+
 
 

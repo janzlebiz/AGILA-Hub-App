@@ -33,6 +33,22 @@ class AuthAndOrganizationTest {
     }
 
     @Test
+    fun testArbitraryNonemptyToken_FailsClosed() {
+        val result = repository.redeemInvitation("arbitrary-unregistered-token", "Kuya Adversary")
+        assertFalse("Arbitrary non-empty token must be rejected by server validation", result)
+    }
+
+    @Test
+    fun testReplayedInvitationToken_FailsClosed() {
+        val inv = repository.createInvitation("invitee@eagles.ph", RoleCode.MEMBER, "BEEC")
+        val firstRedeem = repository.redeemInvitation(inv.tokenHash, "Kuya Invitee")
+        assertTrue("First redemption must succeed", firstRedeem)
+
+        val secondRedeem = repository.redeemInvitation(inv.tokenHash, "Kuya Attacker")
+        assertFalse("Replaying redeemed token must fail closed", secondRedeem)
+    }
+
+    @Test
     fun testCreateInvitation_GeneratesScopedToken() {
         val inv = repository.createInvitation("new.member@eagles.ph", RoleCode.MEMBER, "BEEC")
         assertNotNull(inv.id)

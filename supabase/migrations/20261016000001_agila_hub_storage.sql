@@ -35,27 +35,36 @@ ON storage.objects FOR SELECT
 TO authenticated
 USING (
     bucket_id = 'eagles-ids-private' AND
-    EXISTS (
-        SELECT 1 FROM role_assignments ra
-        JOIN members m ON m.id = ra.member_id
-        WHERE m.user_id = auth.uid()
-          AND ra.is_active = true
-          AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
+    (
+        (storage.foldername(name))[1] = auth.uid()::text
+        OR
+        EXISTS (
+            SELECT 1 FROM members target_m
+            JOIN organization_memberships tom ON tom.member_id = target_m.id
+            JOIN organization_memberships oom ON oom.organization_id = tom.organization_id
+            JOIN members officer_m ON officer_m.id = oom.member_id
+            JOIN role_assignments ra ON ra.member_id = officer_m.id
+            WHERE target_m.user_id::text = (storage.foldername(name))[1]
+              AND officer_m.user_id = auth.uid()
+              AND ra.is_active = true
+              AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
+        )
     )
 );
 
--- Storage RLS Policy: Officers view restricted documents
+-- Storage RLS Policy: Officers view restricted documents in their organization
 CREATE POLICY "Officers view restricted documents"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (
     bucket_id = 'documents-restricted' AND
     EXISTS (
-        SELECT 1 FROM role_assignments ra
+        SELECT 1 FROM documents d
+        JOIN role_assignments ra ON ra.organization_id = d.organization_id
         JOIN members m ON m.id = ra.member_id
-        WHERE m.user_id = auth.uid()
+        WHERE d.id::text = (storage.foldername(name))[1]
+          AND m.user_id = auth.uid()
           AND ra.is_active = true
           AND ra.role IN ('CLUB_OFFICER', 'CLUB_ADMIN', 'REGIONAL_OFFICER', 'NATIONAL_OFFICER')
     )
 );
-
